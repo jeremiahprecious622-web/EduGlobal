@@ -1,0 +1,143 @@
+/* ==========================================================
+   EduGlobal - components.css
+   Navigation, hero, sections, cards, footer.
+   ========================================================== */
+
+/* ---------- Navigation ---------- */
+.site-header {
+  position: sticky; top: 0; z-index: 50; height: var(--nav-h);
+  background: rgba(6, 21, 46, 0.86);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid transparent; transition: border-color 0.2s;
+}
+.site-header.scrolled { border-color: var(--line); }
+.nav { height: var(--nav-h); display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.brand img { height: 42px; width: auto; }
+.nav-links { display: flex; align-items: center; gap: 1.6rem; }
+.nav-links a:not(.btn) { color: var(--muted); font-weight: 600; font-size: 0.93rem; transition: color 0.2s; }
+.nav-links a:not(.btn):hover, .nav-links a[aria-current="page"] { color: var(--white); }
+.nav-actions { display: flex; align-items: center; gap: 0.6rem; }
+.nav-toggle {
+  display: none; background: none; border: 1px solid var(--line); color: var(--white);
+  width: 42px; height: 42px; border-radius: 10px; cursor: pointer; align-items: center; justify-content: center;
+}
+
+@media (max-width: 880px) {
+  .nav-toggle { display: inline-flex; }
+  .nav-menu {
+    position: fixed; inset: var(--nav-h) 0 auto 0; background: var(--navy-2);
+    border-bottom: 1px solid var(--line); padding: 1.2rem 1.25rem 1.6rem;
+    display: none; flex-direction: column; align-items: stretch; gap: 1.2rem;
+  }
+  .nav-menu.open { display: flex; }
+  .nav-links { flex-direction: column; align-items: stretch; gap: 0; }
+  .nav-links a:not(.btn) { padding: 0.85rem 0; border-bottom: 1px solid var(--line); font-size: 1rem; }
+  .nav-actions { flex-direction: column; align-items: stretch; }
+  .nav-actions .btn { width: 100%; }
+}
+@media (min-width: 881px) {
+  .nav-menu { display: flex; align-items: center; gap: 2rem; }
+}
+
+/* ---------- Hero ---------- */
+.hero {
+  position: relative; overflow: hidden; padding: clamp(3rem, 9vw, 6.5rem) 0 clamp(3rem, 8vw, 5.5rem);
+  background:
+    radial-gradient(60% 55% at 85% 10%, rgba(22, 139, 255, 0.28), transparent 70%),
+    radial-gradient(40% 40% at 5% 95%, rgba(255, 200, 61, 0.1), transparent 70%),
+    var(--navy);
+}
+.hero-grid { display: grid; gap: 3rem; align-items: center; }
+@media (min-width: 960px) { .hero-grid { grid-template-columns: 1.15fr 0.85fr; } }
+.hero h1 .gold { color: var(--gold); }
+.hero .lead { font-size: clamp(1.02rem, 2.4vw, 1.2rem); max-width: 34rem; margin-bottom: 1.8rem; }
+.hero-cta { display: flex; flex-wrap: wrap; gap: 0.8rem; }
+.hero-note { margin-top: 1.4rem; font-size: 0.88rem; color: var(--muted); }
+.hero-note strong { color: var(--white); }
+
+.hero-panel {
+  background: linear-gradient(160deg, var(--navy-3), var(--navy-2));
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 1.6rem; box-shadow: var(--glow);
+}
+.hero-panel h2 { font-size: 1.1rem; margin-bottom: 1rem; }
+.panel-list { display: grid; gap: 0.7rem; }
+.panel-item { display: flex; gap: 0.9rem; align-items: flex-start; padding: 0.85rem; border-radius: var(--radius); background: rgba(6, 21, 46, 0.55); border: 1px solid var(--line); }
+.panel-item .icon { color: var(--blue-soft); width: 1.5em; height: 1.5em; margin-top: 2px; }
+.panel-item strong { display: block; font-size: 0.97rem; }
+.panel-item span { font-size: 0.86rem; color: var(--muted); line-height: 1.45; display: block; }
+
+/* ---------- Sections ---------- */
+.section { padding: clamp(3rem, 7vw, 5rem) 0; }
+.section-alt { background: var(--navy-2); border-block: 1px solid var(--line); }
+.section-head { max-width: 40rem; margin-bottom: 2.2rem; }
+.section-head p { font-size: 1.02rem; }
+
+.grid { display: grid; gap: 1.1rem; }
+.grid-3 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.grid-4 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+
+/* ---------- Cards ---------- */
+.card {
+  background: linear-gradient(170deg, var(--navy-3), var(--navy-2));
+  border: 1px solid var(--line); border-radius: var(--radius); padding: 1.4rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+a.card:hover, .card.hoverable:hover { border-color: rgba(22, 139, 255, 0.6); box-shadow: var(--glow); }
+.card h3 { margin-bottom: 0.4rem; }
+.card p { margin: 0; font-size: 0.93rem; }
+.card-icon {
+  width: 46px; height: 46px; border-radius: 12px; display: grid; place-items: center; margin-bottom: 1rem;
+  background: rgba(22, 139, 255, 0.14); color: var(--blue-soft); border: 1px solid rgba(22, 139, 255, 0.3);
+}
+.card-icon.gold { background: rgba(255, 200, 61, 0.12); color: var(--gold); border-color: rgba(255, 200, 61, 0.3); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.9rem; }
+.chip { padding: 0.3rem 0.75rem; border-radius: 999px; font-size: 0.8rem; font-weight: 600; color: var(--blue-soft); background: rgba(22, 139, 255, 0.1); border: 1px solid rgba(22, 139, 255, 0.25); }
+.chip.gold { color: var(--gold); background: rgba(255, 200, 61, 0.08); border-color: rgba(255, 200, 61, 0.28); }
+
+/* ---------- How it works (a real sequence, so numbered) ---------- */
+.steps { counter-reset: step; }
+.step { position: relative; padding-top: 3.4rem; }
+.step::before {
+  counter-increment: step; content: counter(step);
+  position: absolute; top: 1.2rem; left: 1.4rem; width: 32px; height: 32px; border-radius: 50%;
+  display: grid; place-items: center; font-weight: 800; font-size: 0.9rem; color: #1a1300;
+  background: linear-gradient(135deg, #ffe08a, var(--gold));
+}
+
+/* ---------- Empty state ---------- */
+.empty {
+  text-align: center; padding: 2.6rem 1.4rem; border: 1px dashed rgba(120, 170, 255, 0.35);
+  border-radius: var(--radius-lg); background: rgba(11, 32, 64, 0.5);
+}
+.empty .card-icon { margin-inline: auto; }
+.empty p { max-width: 30rem; margin-inline: auto; margin-bottom: 1.2rem; }
+
+/* ---------- International split ---------- */
+.split { display: grid; gap: 2rem; align-items: center; }
+@media (min-width: 900px) { .split { grid-template-columns: 1fr 1fr; gap: 3rem; } }
+.country-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
+.country { padding: 0.75rem 1rem; border-radius: var(--radius); background: var(--navy-3); border: 1px solid var(--line); font-weight: 600; font-size: 0.93rem; }
+.country.more { color: var(--gold); border-style: dashed; }
+
+/* ---------- Call to action ---------- */
+.cta {
+  text-align: center; padding: clamp(2.4rem, 6vw, 4rem) 1.4rem; border-radius: var(--radius-lg);
+  background: radial-gradient(70% 120% at 50% 0%, rgba(22, 139, 255, 0.35), transparent 70%), linear-gradient(160deg, var(--navy-3), var(--navy-2));
+  border: 1px solid rgba(22, 139, 255, 0.4); box-shadow: var(--glow);
+}
+.cta p { max-width: 32rem; margin-inline: auto; margin-bottom: 1.6rem; }
+.cta .hero-cta { justify-content: center; }
+
+/* ---------- Footer ---------- */
+.site-footer { background: #040e20; border-top: 1px solid var(--line); padding: 3.2rem 0 1.6rem; margin-top: 0; }
+.footer-grid { display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+.footer-grid h4 { font-size: 0.95rem; margin-bottom: 0.8rem; }
+.footer-grid li { margin-bottom: 0.5rem; }
+.footer-grid a { color: var(--muted); font-size: 0.92rem; transition: color 0.2s; }
+.footer-grid a:hover { color: var(--white); }
+.footer-brand img { height: 40px; width: auto; margin-bottom: 0.8rem; }
+.footer-brand p { font-size: 0.92rem; max-width: 20rem; }
+.footer-bottom { margin-top: 2.4rem; padding-top: 1.2rem; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.6rem; font-size: 0.85rem; color: var(--muted); }
+.footer-bottom p { margin: 0; }
+  
