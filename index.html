@@ -5,9 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>EduGlobal | Learn. Grow. Achieve.</title>
   <meta name="description" content="EduGlobal is an international online learning platform with live classes, recorded lessons, practice exams and an AI study assistant.">
-  <meta name="theme-color" content="#06152E">
+  <meta name="theme-color" content="#ffffff">
   <link rel="icon" type="image/svg+xml" href="assets/img/logo-icon.svg">
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -15,15 +14,13 @@
   <link rel="stylesheet" href="assets/css/components.css">
 </head>
 <body>
-
-  <!-- Icon library (SVG, no emojis). Used with <use href="#i-name"> -->
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
     <symbol id="i-video" viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3"/></symbol>
     <symbol id="i-play" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l5 3.5-5 3.5z"/></symbol>
     <symbol id="i-exam" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></symbol>
     <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></symbol>
-    <symbol id="i-calc" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h2M12 12h2M16 12h0M8 16h2M12 16h2M16 16h0"/></symbol>
+    <symbol id="i-calc" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h2M12 12h2M8 16h2M12 16h2"/></symbol>
     <symbol id="i-book" viewBox="0 0 24 24"><path d="M12 6c-2-1.5-5-2-8-2v14c3 0 6 .5 8 2 2-1.5 5-2 8-2V4c-3 0-6 .5-8 2z"/><path d="M12 6v14"/></symbol>
     <symbol id="i-flask" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/><path d="M7.5 15h9"/></symbol>
     <symbol id="i-monitor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></symbol>
@@ -35,19 +32,14 @@
     <symbol id="i-phone" viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></symbol>
     <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></symbol>
     <symbol id="i-cap" viewBox="0 0 24 24"><path d="M12 4l10 4.5-10 4.5L2 8.5z"/><path d="M6 11v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/></symbol>
+    <symbol id="i-code" viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></symbol>
+    <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></symbol>
   </svg>
 
-  <!-- ===== Header / Navigation ===== -->
   <header class="site-header">
     <div class="container nav">
-      <a class="brand" href="index.html" aria-label="EduGlobal home">
-        <img src="assets/img/logo.svg" alt="EduGlobal" width="155" height="42">
-      </a>
-
-      <button class="nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="nav-menu">
-        <svg class="icon"><use href="#i-menu"/></svg>
-      </button>
-
+      <a class="brand" href="index.html" aria-label="EduGlobal home"><img src="assets/img/logo.svg" alt="EduGlobal" width="161" height="44"></a>
+      <button class="nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="nav-menu"><svg class="icon"><use href="#i-menu"/></svg></button>
       <div class="nav-menu" id="nav-menu">
         <nav class="nav-links" aria-label="Main">
           <a href="index.html" aria-current="page">Home</a>
@@ -65,180 +57,126 @@
   </header>
 
   <main>
-
-    <!-- ===== Hero ===== -->
     <section class="hero">
-      <div class="container hero-grid">
-        <div>
-          <h1>Your future has <span class="gold">no borders.</span></h1>
-          <p class="lead">EduGlobal brings live classes, recorded lessons, practice exams and an AI study assistant to students in Nigeria and around the world. Learn. Grow. Achieve.</p>
-          <div class="hero-cta">
-            <a class="btn btn-primary" href="auth/student-register.html">Start learning</a>
-            <a class="btn btn-ghost" href="courses.html">Browse courses</a>
+      <div class="container">
+        <div class="hero-grid">
+          <div>
+            <span class="eyebrow"><svg class="icon"><use href="#i-globe"/></svg> Learn. Grow. Achieve.</span>
+            <h1>Your future has <span class="grad">no borders.</span></h1>
+            <p class="lead">Live classes, recorded lessons, practice exams and an AI study assistant for students in Nigeria and around the world.</p>
+            <div class="hero-cta">
+              <a class="btn btn-primary" href="auth/student-register.html">Start learning</a>
+              <a class="btn btn-ghost" href="courses.html">Browse courses</a>
+            </div>
+            <p class="hero-note">Are you a teacher? <a href="teacher-apply.html">Apply to join our teaching team</a></p>
           </div>
-          <p class="hero-note">Are you a teacher? <a href="teacher-apply.html"><strong>Apply to join our teaching team</strong></a></p>
+
+          <aside class="live-card" aria-label="Live class schedule">
+            <div class="live-card-top"><span class="badge" id="live-badge">Live classes</span><span class="tz">Nigeria time (WAT)</span></div>
+            <h2 id="live-title">EduGlobal Live Class</h2>
+            <p class="live-when" id="live-when">Loading schedule...</p>
+            <p class="live-days" id="live-days"></p>
+            <a class="btn btn-primary btn-block" id="live-join" href="auth/student-login.html">Log in to join</a>
+            <div class="mini-row">
+              <div class="mini"><svg class="icon"><use href="#i-play"/></svg>Recorded lessons</div>
+              <div class="mini"><svg class="icon"><use href="#i-exam"/></svg>Practice exams</div>
+              <div class="mini"><svg class="icon"><use href="#i-spark"/></svg>AI assistant</div>
+            </div>
+          </aside>
         </div>
 
-        <div class="hero-visual">
-          <svg class="hero-globe" viewBox="0 0 400 400" aria-hidden="true">
-            <defs>
-              <radialGradient id="g-fill" cx="35%" cy="30%" r="75%">
-                <stop offset="0" stop-color="#1d6fd1" stop-opacity=".55"/>
-                <stop offset="1" stop-color="#06152e" stop-opacity=".1"/>
-              </radialGradient>
-            </defs>
-            <circle cx="200" cy="200" r="150" fill="url(#g-fill)" stroke="#4db0ff" stroke-opacity=".5" stroke-width="1.5"/>
-            <g fill="none" stroke="#4db0ff" stroke-opacity=".35" stroke-width="1">
-              <ellipse cx="200" cy="200" rx="60" ry="150"/>
-              <ellipse cx="200" cy="200" rx="110" ry="150"/>
-              <path d="M50 200H350M70 140H330M70 260H330M110 90H290M110 310H290"/>
-            </g>
-            <g class="orbit">
-              <ellipse cx="200" cy="200" rx="190" ry="60" fill="none" stroke="#ffc83d" stroke-opacity=".6" stroke-width="1.4" stroke-dasharray="3 7" transform="rotate(-24 200 200)"/>
-              <circle cx="372" cy="152" r="7" fill="#ffc83d"/>
-            </g>
-          </svg>
-          <aside class="hero-panel" aria-label="What you can do on EduGlobal">
-          <h2>Everything you need in one place</h2>
-          <ul class="panel-list">
-            <li class="panel-item">
-              <svg class="icon"><use href="#i-video"/></svg>
-              <div><strong>Live classes</strong><span>Join teachers in real time through Google Meet.</span></div>
-            </li>
-            <li class="panel-item">
-              <svg class="icon"><use href="#i-play"/></svg>
-              <div><strong>Recorded lessons</strong><span>Missed a class? Watch it later, at your own pace.</span></div>
-            </li>
-            <li class="panel-item">
-              <svg class="icon"><use href="#i-exam"/></svg>
-              <div><strong>Practice exams</strong><span>Timed tests with instant marking and explanations.</span></div>
-            </li>
-            <li class="panel-item">
-              <svg class="icon"><use href="#i-spark"/></svg>
-              <div><strong>AI study assistant</strong><span>Ask questions and get simple, step-by-step help.</span></div>
-            </li>
-          </ul>
-        </aside>
+        <div class="facts" aria-label="Platform at a glance">
+          <div><strong>6</strong><span>class levels, JSS 1 to SS3</span></div>
+          <div><strong>5</strong><span>exam tracks: JAMB, WAEC, NECO, GCE</span></div>
+          <div><strong>7+</strong><span>countries supported</span></div>
+          <div><strong>Live + recorded</strong><span>lessons for every learner</span></div>
         </div>
       </div>
     </section>
 
-    <!-- ===== Facts strip ===== -->
-    <section class="facts" aria-label="Platform at a glance">
-      <div class="container facts-grid">
-        <div><strong>6</strong><span>class levels, JSS 1 to SS3</span></div>
-        <div><strong>5</strong><span>exam tracks: JAMB, WAEC, NECO and GCE</span></div>
-        <div><strong>7+</strong><span>countries supported at launch</span></div>
-        <div><strong>Live + recorded</strong><span>lessons, with an AI study assistant</span></div>
-      </div>
-    </section>
-
-    <!-- ===== Course categories ===== -->
     <section class="section" id="subjects">
       <div class="container">
-        <div class="section-head">
-          <h2>Subjects you can study</h2>
-          <p>Core subjects for every level, with more added as our teaching team grows.</p>
-        </div>
+        <div class="section-head"><span class="kicker">Subjects</span><h2>Study what you need</h2><p>Core subjects for every level, with more added as our teaching team grows.</p></div>
         <div class="grid grid-4">
-          <a class="card" href="courses.html"><div class="card-icon"><svg class="icon"><use href="#i-calc"/></svg></div><h3>Mathematics</h3><p>From basic algebra to advanced problem solving.</p></a>
-          <a class="card" href="courses.html"><div class="card-icon"><svg class="icon"><use href="#i-book"/></svg></div><h3>English Language</h3><p>Grammar, comprehension, essays and oral English.</p></a>
-          <a class="card" href="courses.html"><div class="card-icon"><svg class="icon"><use href="#i-flask"/></svg></div><h3>Sciences</h3><p>General Science, Biology, Chemistry and Physics.</p></a>
-          <a class="card" href="courses.html"><div class="card-icon"><svg class="icon"><use href="#i-monitor"/></svg></div><h3>Computer Studies</h3><p>Digital skills and the basics of computing.</p></a>
-          <a class="card" href="courses.html"><div class="card-icon"><svg class="icon"><use href="#i-chart"/></svg></div><h3>Economics and Business</h3><p>Economics, Business Studies and Commerce.</p></a>
-          <a class="card" href="courses.html"><div class="card-icon"><svg class="icon"><use href="#i-globe"/></svg></div><h3>Geography and History</h3><p>Understand the world and how it came to be.</p></a>
-          <a class="card" href="courses.html"><div class="card-icon gold"><svg class="icon"><use href="#i-grid"/></svg></div><h3>Other subjects</h3><p>New subjects are added as teachers join.</p></a>
+          <a class="card" href="courses.html"><div class="card-icon t-blue"><svg class="icon"><use href="#i-calc"/></svg></div><h3>Mathematics</h3><p>From basic algebra to advanced problem solving.</p></a>
+          <a class="card" href="courses.html"><div class="card-icon t-coral"><svg class="icon"><use href="#i-book"/></svg></div><h3>English Language</h3><p>Grammar, comprehension, essays and oral English.</p></a>
+          <a class="card" href="courses.html"><div class="card-icon t-green"><svg class="icon"><use href="#i-flask"/></svg></div><h3>Sciences</h3><p>General Science, Biology, Chemistry and Physics.</p></a>
+          <a class="card" href="courses.html"><div class="card-icon t-violet"><svg class="icon"><use href="#i-monitor"/></svg></div><h3>Computer Studies</h3><p>Digital skills and the basics of computing.</p></a>
+          <a class="card" href="courses.html"><div class="card-icon t-gold"><svg class="icon"><use href="#i-chart"/></svg></div><h3>Economics and Business</h3><p>Economics, Business Studies and Commerce.</p></a>
+          <a class="card" href="courses.html"><div class="card-icon t-teal"><svg class="icon"><use href="#i-globe"/></svg></div><h3>Geography and History</h3><p>Understand the world and how it came to be.</p></a>
         </div>
       </div>
     </section>
 
-    <!-- ===== Levels and exam preparation ===== -->
-    <section class="section section-alt" id="levels">
-      <div class="container grid grid-3">
-        <div class="card">
-          <div class="card-icon"><svg class="icon"><use href="#i-book"/></svg></div>
-          <h3>Junior Secondary</h3>
-          <p>Build strong foundations in the first three years of secondary school.</p>
-          <div class="chips"><span class="chip">JSS 1</span><span class="chip">JSS 2</span><span class="chip">JSS 3</span></div>
-        </div>
-        <div class="card">
-          <div class="card-icon"><svg class="icon"><use href="#i-cap"/></svg></div>
-          <h3>Senior Secondary</h3>
-          <p>Prepare for your final years with focused, topic-by-topic lessons.</p>
-          <div class="chips"><span class="chip">SS1</span><span class="chip">SS2</span><span class="chip">SS3</span></div>
-        </div>
-        <div class="card">
-          <div class="card-icon gold"><svg class="icon"><use href="#i-exam"/></svg></div>
-          <h3>Exam preparation</h3>
-          <p>Practise with timed computer-based tests and learn from the explanations.</p>
-          <div class="chips"><span class="chip gold">JAMB</span><span class="chip gold">WAEC</span><span class="chip gold">NECO</span><span class="chip gold">GCE</span></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== How it works ===== -->
-    <section class="section" id="how-it-works">
+    <section class="section section-soft" id="levels">
       <div class="container">
-        <div class="section-head">
-          <h2>How EduGlobal works</h2>
-          <p>Get started in a few minutes.</p>
+        <div class="section-head"><span class="kicker">Levels and exams</span><h2>Learn at your level</h2></div>
+        <div class="grid grid-3">
+          <div class="card"><div class="card-icon t-blue"><svg class="icon"><use href="#i-book"/></svg></div><h3>Junior Secondary</h3><p>Build strong foundations in the first three years.</p><div class="chips"><span class="chip">JSS 1</span><span class="chip">JSS 2</span><span class="chip">JSS 3</span></div></div>
+          <div class="card"><div class="card-icon t-violet"><svg class="icon"><use href="#i-cap"/></svg></div><h3>Senior Secondary</h3><p>Focused, topic-by-topic lessons for your final years.</p><div class="chips"><span class="chip">SS1</span><span class="chip">SS2</span><span class="chip">SS3</span></div></div>
+          <div class="card"><div class="card-icon t-gold"><svg class="icon"><use href="#i-exam"/></svg></div><h3>Exam preparation</h3><p>Timed computer-based tests with explanations.</p><div class="chips"><span class="chip gold">JAMB</span><span class="chip gold">WAEC</span><span class="chip gold">NECO</span><span class="chip gold">GCE</span></div></div>
         </div>
+      </div>
+    </section>
+
+    <section class="section" id="advanced">
+      <div class="container">
+        <div class="section-head"><span class="kicker">Beyond the classroom</span><h2>Advanced skills, taught by experts</h2><p>As qualified teachers join, we will add advanced courses. These are planned, not yet available.</p></div>
+        <div class="grid grid-4">
+          <div class="card"><span class="soon">Coming soon</span><div class="card-icon t-violet"><svg class="icon"><use href="#i-code"/></svg></div><h3>Programming</h3><p>Learn to build websites and apps.</p></div>
+          <div class="card"><span class="soon">Coming soon</span><div class="card-icon t-green"><svg class="icon"><use href="#i-chart"/></svg></div><h3>Data and spreadsheets</h3><p>Work with numbers and make decisions.</p></div>
+          <div class="card"><span class="soon">Coming soon</span><div class="card-icon t-coral"><svg class="icon"><use href="#i-bulb"/></svg></div><h3>Digital skills</h3><p>Skills for study, work and business online.</p></div>
+          <div class="card"><span class="soon">Coming soon</span><div class="card-icon t-blue"><svg class="icon"><use href="#i-cap"/></svg></div><h3>University entry</h3><p>Prepare for the next stage of study.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-soft" id="how-it-works">
+      <div class="container">
+        <div class="section-head"><span class="kicker">How it works</span><h2>Get started in minutes</h2></div>
         <div class="grid grid-4 steps">
-          <div class="card step"><h3>Create your account</h3><p>Sign up with your email and tell us your country.</p></div>
+          <div class="card step"><h3>Create your account</h3><p>Sign up with your email and choose your country.</p></div>
           <div class="card step"><h3>Choose your level</h3><p>Pick your curriculum, class level and subjects.</p></div>
           <div class="card step"><h3>Learn and practise</h3><p>Join live classes, watch lessons and take practice tests.</p></div>
-          <div class="card step"><h3>Track your progress</h3><p>See your scores and completed lessons on your dashboard.</p></div>
+          <div class="card step"><h3>Track your progress</h3><p>See your scores and completed lessons.</p></div>
         </div>
       </div>
     </section>
 
-    <!-- ===== Benefits ===== -->
-    <section class="section section-alt" id="benefits">
+    <section class="section" id="benefits">
       <div class="container">
-        <div class="section-head">
-          <h2>Why students choose EduGlobal</h2>
-        </div>
+        <div class="section-head"><span class="kicker">Why EduGlobal</span><h2>Built for serious learners</h2></div>
         <div class="grid grid-3">
-          <div class="card"><div class="card-icon"><svg class="icon"><use href="#i-users"/></svg></div><h3>Real teachers</h3><p>Every teacher is reviewed by an administrator before they can teach.</p></div>
-          <div class="card"><div class="card-icon"><svg class="icon"><use href="#i-phone"/></svg></div><h3>Built for phones</h3><p>Designed to work well on Android phones, tablets and computers.</p></div>
-          <div class="card"><div class="card-icon"><svg class="icon"><use href="#i-spark"/></svg></div><h3>Instant help</h3><p>Ask the AI study assistant when you are stuck. Daily limits apply.</p></div>
-          <div class="card"><div class="card-icon"><svg class="icon"><use href="#i-shield"/></svg></div><h3>Safe for young learners</h3><p>We collect only the information we need and offer reporting tools.</p></div>
-          <div class="card"><div class="card-icon"><svg class="icon"><use href="#i-chat"/></svg></div><h3>Classroom community</h3><p>Join WhatsApp classrooms to stay in touch with your class.</p></div>
-          <div class="card"><div class="card-icon"><svg class="icon"><use href="#i-chart"/></svg></div><h3>Clear progress</h3><p>Know what you have finished and what to revise next.</p></div>
+          <div class="card"><div class="card-icon t-blue"><svg class="icon"><use href="#i-users"/></svg></div><h3>Verified teachers</h3><p>Every teacher is reviewed by an administrator before teaching.</p></div>
+          <div class="card"><div class="card-icon t-green"><svg class="icon"><use href="#i-phone"/></svg></div><h3>Built for phones</h3><p>Works well on Android phones, tablets and computers.</p></div>
+          <div class="card"><div class="card-icon t-violet"><svg class="icon"><use href="#i-spark"/></svg></div><h3>AI study help</h3><p>Ask questions when you are stuck. Daily limits apply.</p></div>
+          <div class="card"><div class="card-icon t-gold"><svg class="icon"><use href="#i-shield"/></svg></div><h3>Safe for young learners</h3><p>We collect only what we need and offer reporting tools.</p></div>
+          <div class="card"><div class="card-icon t-coral"><svg class="icon"><use href="#i-chat"/></svg></div><h3>Class community</h3><p>Join WhatsApp classrooms to stay in touch.</p></div>
+          <div class="card"><div class="card-icon t-teal"><svg class="icon"><use href="#i-chart"/></svg></div><h3>Clear progress</h3><p>Know what you finished and what to revise next.</p></div>
         </div>
       </div>
     </section>
 
-    <!-- ===== International ===== -->
-    <section class="section" id="international">
+    <section class="section section-soft" id="international">
       <div class="container split">
         <div>
+          <span class="kicker">International</span>
           <h2>Learning for students everywhere</h2>
-          <p>EduGlobal is not limited to one education system. Choose your country when you register, and we will show the curricula and levels that apply to you. We begin with the Nigerian curriculum and are adding more over time.</p>
+          <p>Choose your country when you register and we show the curricula that apply to you. We begin with the Nigerian curriculum and are adding more over time.</p>
           <a class="btn btn-ghost" href="auth/student-register.html">Choose your country</a>
         </div>
         <div class="country-list" aria-label="Supported countries">
-          <div class="country">Nigeria</div>
-          <div class="country">Ghana</div>
-          <div class="country">United Kingdom</div>
-          <div class="country">United States</div>
-          <div class="country">Canada</div>
-          <div class="country">South Africa</div>
-          <div class="country">India</div>
-          <div class="country more">Other countries</div>
+          <div class="country">Nigeria</div><div class="country">Ghana</div><div class="country">United Kingdom</div><div class="country">United States</div>
+          <div class="country">Canada</div><div class="country">South Africa</div><div class="country">India</div><div class="country more">Other countries</div>
         </div>
       </div>
     </section>
 
-    <!-- ===== Featured teachers (empty state until teachers are approved) ===== -->
-    <section class="section section-alt" id="teachers">
+    <section class="section" id="teachers">
       <div class="container">
-        <div class="section-head">
-          <h2>Our teaching team</h2>
-          <p>Teachers appear here after an administrator has checked their credentials.</p>
-        </div>
+        <div class="section-head"><span class="kicker">Our team</span><h2>Our teaching team</h2><p>Teachers appear here after an administrator has checked their credentials.</p></div>
         <div class="empty">
-          <div class="card-icon gold"><svg class="icon"><use href="#i-users"/></svg></div>
+          <div class="card-icon t-gold"><svg class="icon"><use href="#i-users"/></svg></div>
           <h3>Teachers are joining soon</h3>
           <p>We are building a small, carefully selected team. Qualified teachers can apply now.</p>
           <a class="btn btn-gold" href="teacher-apply.html">Apply to teach</a>
@@ -246,62 +184,33 @@
       </div>
     </section>
 
-    <!-- ===== Call to action ===== -->
-    <section class="section">
+    <section class="section" style="padding-top:0">
       <div class="container">
         <div class="cta">
           <h2>Ready to start learning?</h2>
-          <p>Create a free student account and set up your dashboard in a few minutes.</p>
-          <div class="hero-cta">
-            <a class="btn btn-primary" href="auth/student-register.html">Create account</a>
-            <a class="btn btn-ghost" href="auth/student-login.html">Log in</a>
-          </div>
+          <p>Create a free student account and set up your dashboard in minutes.</p>
+          <div class="hero-cta"><a class="btn btn-gold" href="auth/student-register.html">Create account</a><a class="btn btn-light" href="auth/student-login.html">Log in</a></div>
         </div>
       </div>
     </section>
-
   </main>
 
-  <!-- ===== Footer ===== -->
   <footer class="site-footer">
     <div class="container">
       <div class="footer-grid">
-        <div class="footer-brand">
-          <img src="assets/img/logo.svg" alt="EduGlobal" width="146" height="40">
-          <p>Your Future Has No Borders.</p>
-        </div>
-        <div>
-          <h4>Learn</h4>
-          <ul>
-            <li><a href="courses.html">Courses</a></li>
-            <li><a href="auth/student-register.html">Create account</a></li>
-            <li><a href="auth/student-login.html">Student login</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4>Teach</h4>
-          <ul>
-            <li><a href="teacher-apply.html">Apply to teach</a></li>
-            <li><a href="auth/teacher-login.html">Teacher login</a></li>
-            <li><a href="teachers.html">Our teachers</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4>Company</h4>
-          <ul>
-            <li><a href="about.html">About</a></li>
-            <li><a href="contact.html">Contact</a></li>
-          </ul>
-        </div>
+        <div class="footer-brand"><img src="assets/img/logo.svg" alt="EduGlobal" width="153" height="42"><p>Your Future Has No Borders.</p></div>
+        <div><h4>Learn</h4><ul><li><a href="courses.html">Courses</a></li><li><a href="auth/student-register.html">Create account</a></li><li><a href="auth/student-login.html">Student login</a></li></ul></div>
+        <div><h4>Teach</h4><ul><li><a href="teacher-apply.html">Apply to teach</a></li><li><a href="auth/teacher-login.html">Teacher login</a></li><li><a href="teachers.html">Our teachers</a></li></ul></div>
+        <div><h4>Company</h4><ul><li><a href="about.html">About</a></li><li><a href="contact.html">Contact</a></li></ul></div>
       </div>
-      <div class="footer-bottom">
-        <p>&copy; <span id="year">2026</span> EduGlobal. All rights reserved.</p>
-        <p>Learn. Grow. Achieve.</p>
-      </div>
+      <div class="footer-bottom"><p>&copy; <span id="year">2026</span> EduGlobal. All rights reserved.</p><p>Learn. Grow. Achieve.</p></div>
     </div>
   </footer>
 
+  <!-- Appears only during live class time -->
+  <a class="live-fab" id="live-fab" href="auth/student-login.html" hidden><span class="dot"></span>Join online lesson</a>
+
   <script type="module" src="assets/js/ui.js"></script>
 </body>
-                                                                                                </html>
-                                                                          
+                                                                                                                              </html>
+  
