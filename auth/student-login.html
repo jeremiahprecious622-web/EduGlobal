@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Student login | EduGlobal</title>
-  <meta name="theme-color" content="#06152E">
+  <meta name="theme-color" content="#ffffff">
   <link rel="icon" type="image/svg+xml" href="../assets/img/logo-icon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,38 +11,36 @@
   <link rel="stylesheet" href="../assets/css/base.css">
   <link rel="stylesheet" href="../assets/css/components.css">
   <link rel="stylesheet" href="../assets/css/forms.css">
+  <title>Student login | EduGlobal</title>
 </head>
 <body>
-  <header class="auth-header">
-    <div class="container">
-      <a href="../index.html" aria-label="EduGlobal home"><img src="../assets/img/logo.svg" alt="EduGlobal" width="145" height="38"></a>
-      <a class="back" href="../index.html">Back to home</a>
-    </div>
-  </header>
-
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M3 3l18 18M10.6 5.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4M6.5 6.6C3.8 8.4 2 12 2 12s3.6 7 10 7c1.7 0 3.2-.4 4.5-1M9.9 9.9a3 3 0 0 0 4.2 4.2"/></symbol>
+  </svg>
   <main class="auth-page">
-    <div class="auth-card">
+    <a class="auth-logo" href="../index.html" aria-label="EduGlobal home"><img src="../assets/img/logo.svg" alt="EduGlobal" width="169" height="46"></a>
+    <div class="auth-card narrow">
       <h1>Welcome back</h1>
       <p class="sub">Log in to continue learning.</p>
-
       <div id="message" class="message" role="alert"></div>
-
       <form id="login-form" novalidate>
-        <div class="field">
-          <label for="email">Email address</label>
-          <input class="input" id="email" type="email" autocomplete="email" inputmode="email" required>
-        </div>
+        <div class="field"><label for="email">Email address</label><input class="input" id="email" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com"></div>
         <div class="field">
           <label for="password">Password</label>
-          <input class="input" id="password" type="password" autocomplete="current-password" required>
+          <div class="pw-wrap">
+            <input class="input" id="password" type="password" autocomplete="current-password" placeholder="Your password">
+            <button class="pw-toggle" type="button" id="toggle" aria-label="Show password"><svg class="icon"><use href="#i-eye"/></svg></button>
+          </div>
         </div>
         <div class="row-end"><button class="link-btn" type="button" id="forgot">Forgot password?</button></div>
         <button class="btn btn-primary btn-block" id="submit" type="submit">Log in</button>
       </form>
-
       <p class="auth-switch">New to EduGlobal? <a href="student-register.html">Create an account</a></p>
       <p class="auth-switch">Are you a teacher? <a href="teacher-login.html">Teacher login</a></p>
     </div>
+    <a class="auth-back" href="../index.html">Back to home</a>
   </main>
 
   <script type="module">
@@ -51,32 +48,29 @@
     import { isConfigured } from "../assets/js/firebase-config.js";
 
     const $ = (id) => document.getElementById(id);
-    const messageBox = $("message");
-    const submitBtn = $("submit");
+    const messageBox = $("message"), submitBtn = $("submit");
+    function showMessage(text, type) { messageBox.textContent = text; messageBox.className = "message show " + type; }
 
-    function showMessage(text, type) {
-      messageBox.textContent = text;
-      messageBox.className = "message show " + type;
-    }
+    $("toggle").addEventListener("click", () => {
+      const input = $("password"); const show = input.type === "password";
+      input.type = show ? "text" : "password";
+      $("toggle").querySelector("use").setAttribute("href", show ? "#i-eye-off" : "#i-eye");
+      $("toggle").setAttribute("aria-label", show ? "Hide password" : "Show password");
+    });
 
     $("login-form").addEventListener("submit", async (event) => {
       event.preventDefault();
       messageBox.className = "message";
       if (!isConfigured) return showMessage("Firebase is not set up yet. Paste your details into assets/js/firebase-config.js.", "error");
-
-      const email = $("email").value.trim().toLowerCase();
-      const password = $("password").value;
+      const email = $("email").value.trim().toLowerCase(), password = $("password").value;
       if (!email || !password) return showMessage("Please enter your email and password.", "error");
-
-      submitBtn.disabled = true;
-      submitBtn.textContent = "Logging in...";
+      submitBtn.disabled = true; submitBtn.textContent = "Logging in...";
       try {
         await loginStudent(email, password);
         window.location.href = "../student/dashboard.html";
       } catch (error) {
         showMessage(friendlyError(error), "error");
-        submitBtn.disabled = false;
-        submitBtn.textContent = "Log in";
+        submitBtn.disabled = false; submitBtn.textContent = "Log in";
       }
     });
 
@@ -85,16 +79,13 @@
       if (!isConfigured) return showMessage("Firebase is not set up yet.", "error");
       const email = $("email").value.trim().toLowerCase();
       if (!email) return showMessage("Type your email above first, then tap Forgot password.", "error");
-      try {
-        await resetPassword(email);
-      } catch (error) {
-        if (error.code === "auth/too-many-requests" || error.code === "auth/network-request-failed") {
-          return showMessage(friendlyError(error), "error");
-        }
+      try { await resetPassword(email); }
+      catch (error) {
+        if (error.code === "auth/too-many-requests" || error.code === "auth/network-request-failed") return showMessage(friendlyError(error), "error");
       }
       showMessage("If an account exists for that email, a reset link has been sent. Check your inbox and spam folder.", "success");
     });
   </script>
 </body>
-                                                   </html>
-          
+                        </html>
+                                                                                                         
