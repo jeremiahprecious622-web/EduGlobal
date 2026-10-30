@@ -140,4 +140,63 @@ a.card:hover, .card.hoverable:hover { border-color: rgba(22, 139, 255, 0.6); box
 .footer-brand p { font-size: 0.92rem; max-width: 20rem; }
 .footer-bottom { margin-top: 2.4rem; padding-top: 1.2rem; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.6rem; font-size: 0.85rem; color: var(--muted); }
 .footer-bottom p { margin: 0; }
-  
+
+/* ==========================================================
+   PREMIUM POLISH (added in Stage 2 upgrade)
+   ========================================================== */
+
+/* Subtle grid behind the hero, faded at the edges */
+.hero::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(120, 170, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(120, 170, 255, 0.07) 1px, transparent 1px);
+  background-size: 52px 52px;
+  -webkit-mask-image: radial-gradient(75% 85% at 70% 30%, #000 25%, transparent 78%);
+  mask-image: radial-gradient(75% 85% at 70% 30%, #000 25%, transparent 78%);
+}
+.hero .container { position: relative; z-index: 1; }
+
+/* Headline: gold gradient */
+.hero h1 .gold {
+  background: linear-gradient(100deg, #ffe08a 10%, #ffc83d 55%, #f0a500);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+
+/* Globe sits behind a glass panel */
+.hero-visual { position: relative; }
+.hero-globe {
+  position: absolute; width: 125%; max-width: 560px; right: -14%; top: -22%;
+  z-index: 0; filter: drop-shadow(0 0 40px rgba(22, 139, 255, 0.45));
+}
+.orbit { transform-origin: 200px 200px; animation: spin 90s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.hero-panel {
+  position: relative; z-index: 1;
+  background: linear-gradient(160deg, rgba(17, 41, 77, 0.78), rgba(11, 32, 64, 0.72));
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+}
+@media (max-width: 959px) { .hero-globe { right: -30%; top: -18%; width: 110%; opacity: 0.55; } }
+
+/* Facts strip */
+.facts { border-block: 1px solid var(--line); background: linear-gradient(90deg, rgba(22, 139, 255, 0.08), rgba(255, 200, 61, 0.05)); }
+.facts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 1.4rem; padding-block: 1.6rem; }
+.facts-grid strong { display: block; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; color: var(--white); }
+.facts-grid span { font-size: 0.86rem; color: var(--muted); }
+
+/* Cards: gradient edge and soft top light */
+.card { position: relative; background: linear-gradient(180deg, rgba(22, 139, 255, 0.07), transparent 40%), linear-gradient(170deg, var(--navy-3), var(--navy-2)); }
+a.card:hover, .card.hoverable:hover { transform: translateY(-3px); }
+a.card { transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; }
+
+/* Section dividers: thin glowing line */
+.section-alt { position: relative; }
+.section-alt::before {
+  content: ""; position: absolute; top: -1px; left: 50%; transform: translateX(-50%);
+  width: min(60%, 520px); height: 1px; background: linear-gradient(90deg, transparent, var(--blue), transparent);
+}
+
+/* Buttons: soft glow on hover */
+.btn-primary:hover { box-shadow: 0 10px 34px -6px rgba(22, 139, 255, 0.9); }
+.btn-gold:hover { box-shadow: 0 10px 34px -8px rgba(255, 200, 61, 0.85); }
+   
