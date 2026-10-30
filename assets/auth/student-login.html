@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Student login | EduGlobal</title>
+  <meta name="theme-color" content="#06152E">
+  <link rel="icon" type="image/svg+xml" href="../assets/img/logo-icon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/forms.css">
+</head>
+<body>
+  <header class="auth-header">
+    <div class="container">
+      <a href="../index.html" aria-label="EduGlobal home"><img src="../assets/img/logo.svg" alt="EduGlobal" width="145" height="38"></a>
+      <a class="back" href="../index.html">Back to home</a>
+    </div>
+  </header>
+
+  <main class="auth-page">
+    <div class="auth-card">
+      <h1>Welcome back</h1>
+      <p class="sub">Log in to continue learning.</p>
+
+      <div id="message" class="message" role="alert"></div>
+
+      <form id="login-form" novalidate>
+        <div class="field">
+          <label for="email">Email address</label>
+          <input class="input" id="email" type="email" autocomplete="email" inputmode="email" required>
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input class="input" id="password" type="password" autocomplete="current-password" required>
+        </div>
+        <div class="row-end"><button class="link-btn" type="button" id="forgot">Forgot password?</button></div>
+        <button class="btn btn-primary btn-block" id="submit" type="submit">Log in</button>
+      </form>
+
+      <p class="auth-switch">New to EduGlobal? <a href="student-register.html">Create an account</a></p>
+      <p class="auth-switch">Are you a teacher? <a href="teacher-login.html">Teacher login</a></p>
+    </div>
+  </main>
+
+  <script type="module">
+    import { loginStudent, resetPassword, friendlyError } from "../assets/js/auth.js";
+    import { isConfigured } from "../assets/js/firebase-config.js";
+
+    const $ = (id) => document.getElementById(id);
+    const messageBox = $("message");
+    const submitBtn = $("submit");
+
+    function showMessage(text, type) {
+      messageBox.textContent = text;
+      messageBox.className = "message show " + type;
+    }
+
+    $("login-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      messageBox.className = "message";
+      if (!isConfigured) return showMessage("Firebase is not set up yet. Paste your details into assets/js/firebase-config.js.", "error");
+
+      const email = $("email").value.trim().toLowerCase();
+      const password = $("password").value;
+      if (!email || !password) return showMessage("Please enter your email and password.", "error");
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Logging in...";
+      try {
+        await loginStudent(email, password);
+        window.location.href = "../student/dashboard.html";
+      } catch (error) {
+        showMessage(friendlyError(error), "error");
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Log in";
+      }
+    });
+
+    $("forgot").addEventListener("click", async () => {
+      messageBox.className = "message";
+      if (!isConfigured) return showMessage("Firebase is not set up yet.", "error");
+      const email = $("email").value.trim().toLowerCase();
+      if (!email) return showMessage("Type your email above first, then tap Forgot password.", "error");
+      try {
+        await resetPassword(email);
+      } catch (error) {
+        if (error.code === "auth/too-many-requests" || error.code === "auth/network-request-failed") {
+          return showMessage(friendlyError(error), "error");
+        }
+      }
+      showMessage("If an account exists for that email, a reset link has been sent. Check your inbox and spam folder.", "success");
+    });
+  </script>
+</body>
+                                                   </html>
+          
