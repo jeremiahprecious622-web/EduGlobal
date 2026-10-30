@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My dashboard | EduGlobal</title>
+  <meta name="theme-color" content="#06152E">
+  <link rel="icon" type="image/svg+xml" href="../assets/img/logo-icon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/forms.css">
+</head>
+<body>
+  <header class="auth-header">
+    <div class="container">
+      <a href="../index.html" aria-label="EduGlobal home"><img src="../assets/img/logo.svg" alt="EduGlobal" width="145" height="38"></a>
+      <button class="btn btn-ghost btn-sm" id="logout" type="button">Log out</button>
+    </div>
+  </header>
+
+  <main class="auth-page">
+    <div class="auth-card">
+      <p id="loading">Loading your dashboard...</p>
+      <div id="content" hidden>
+        <h1 id="welcome"></h1>
+        <p class="sub">Your account is working. The full dashboard (courses, live classes, progress) is built in Stage 5.</p>
+        <dl class="profile-list">
+          <div><dt>Email</dt><dd id="p-email"></dd></div>
+          <div><dt>Country</dt><dd id="p-country"></dd></div>
+          <div><dt>Curriculum</dt><dd id="p-curriculum"></dd></div>
+          <div><dt>Level</dt><dd id="p-level"></dd></div>
+          <div><dt>Subjects</dt><dd id="p-subjects"></dd></div>
+        </dl>
+      </div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { requireStudent, logout } from "../assets/js/auth.js";
+    import { CURRICULA } from "../assets/js/curricula-data.js";
+
+    const $ = (id) => document.getElementById(id);
+
+    requireStudent((user, profile) => {
+      const curriculum = CURRICULA[profile.curriculum];
+      const level = curriculum ? curriculum.levels.find((l) => l.id === profile.level) : null;
+      $("welcome").textContent = "Welcome, " + profile.fullName.split(" ")[0];
+      $("p-email").textContent = profile.email;
+      $("p-country").textContent = profile.country;
+      $("p-curriculum").textContent = curriculum ? curriculum.name : profile.curriculum;
+      $("p-level").textContent = level ? level.label : profile.level;
+      $("p-subjects").textContent = profile.subjects.join(", ");
+      $("loading").hidden = true;
+      $("content").hidden = false;
+    });
+
+    $("logout").addEventListener("click", async () => {
+      await logout();
+      window.location.href = "../index.html";
+    });
+  </script>
+</body>
+  </html>
+  
