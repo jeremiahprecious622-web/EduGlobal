@@ -1,0 +1,64 @@
+/* ==========================================================
+   EduGlobal - forms.css
+   Styles for login, registration and other form pages.
+   ========================================================== */
+
+.auth-header { padding: 0.9rem 0; border-bottom: 1px solid var(--line); background: var(--navy); }
+.auth-header .container { display: flex; justify-content: space-between; align-items: center; }
+.auth-header img { height: 38px; width: auto; }
+.auth-header a.back { color: var(--muted); font-size: 0.9rem; font-weight: 600; }
+.auth-header a.back:hover { color: var(--white); }
+
+.auth-page {
+  min-height: calc(100vh - 66px); padding: 2rem 0 3rem;
+  background: radial-gradient(60% 40% at 80% 0%, rgba(22, 139, 255, 0.22), transparent 70%), var(--navy);
+}
+.auth-card {
+  width: min(100% - 2rem, 580px); margin: 0 auto; padding: clamp(1.4rem, 5vw, 2.4rem);
+  background: linear-gradient(170deg, var(--navy-3), var(--navy-2));
+  border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--glow);
+}
+.auth-card h1 { font-size: clamp(1.6rem, 5vw, 2.1rem); }
+.auth-card .sub { margin-bottom: 1.6rem; }
+
+.field { margin-bottom: 1.1rem; }
+.field label, .field legend { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 0.4rem; padding: 0; }
+.input {
+  width: 100%; min-height: 48px; padding: 0.7rem 0.95rem; font: inherit; font-size: 1rem; color: var(--white);
+  background: rgba(6, 21, 46, 0.7); border: 1px solid var(--line); border-radius: 12px;
+}
+.input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(22, 139, 255, 0.25); }
+.input:disabled { opacity: 0.55; }
+select.input option, select.input optgroup { background: var(--navy-2); color: #fff; }
+.hint { font-size: 0.82rem; color: var(--muted); margin: 0.35rem 0 0; }
+
+.two-col { display: grid; gap: 1rem; }
+@media (min-width: 560px) { .two-col { grid-template-columns: 1fr 1fr; } }
+
+fieldset.field { border: 0; margin-inline: 0; min-width: 0; }
+.check-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 0.5rem; }
+.check {
+  display: flex; gap: 0.6rem; align-items: center; padding: 0.65rem 0.8rem; font-size: 0.92rem; cursor: pointer;
+  border: 1px solid var(--line); border-radius: 12px; background: rgba(6, 21, 46, 0.5);
+}
+.check input { width: 18px; height: 18px; accent-color: var(--blue); flex: none; }
+.check:has(input:checked) { border-color: var(--blue); background: rgba(22, 139, 255, 0.12); }
+.check.consent { align-items: flex-start; line-height: 1.5; }
+
+.message { display: none; padding: 0.8rem 1rem; border-radius: 12px; font-size: 0.92rem; margin-bottom: 1rem; }
+.message.show { display: block; }
+.message.error { background: rgba(255, 90, 90, 0.1); border: 1px solid rgba(255, 90, 90, 0.45); color: #ffb4b4; }
+.message.success { background: rgba(60, 200, 140, 0.1); border: 1px solid rgba(60, 200, 140, 0.45); color: #9cf0c8; }
+
+.btn-block { width: 100%; }
+.btn[disabled] { opacity: 0.65; cursor: wait; transform: none; }
+.auth-switch { text-align: center; margin: 1.3rem 0 0; font-size: 0.92rem; color: var(--muted); }
+.auth-switch a, .link-btn { color: var(--blue-soft); font-weight: 700; }
+.link-btn { background: none; border: 0; font: inherit; font-weight: 600; cursor: pointer; padding: 0; }
+.row-end { display: flex; justify-content: flex-end; margin: -0.4rem 0 1.1rem; font-size: 0.88rem; }
+
+/* Temporary dashboard profile list */
+.profile-list { display: grid; gap: 0.6rem; margin: 1.2rem 0 1.6rem; }
+.profile-list div { padding: 0.75rem 1rem; border: 1px solid var(--line); border-radius: 12px; background: rgba(6, 21, 46, 0.5); }
+.profile-list dt { font-size: 0.8rem; color: var(--muted); }
+.profile-list dd { margin: 0; font-weight: 600; }
