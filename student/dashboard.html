@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>My dashboard | EduGlobal</title>
-  <meta name="theme-color" content="#06152E">
+  <meta name="theme-color" content="#ffffff">
   <link rel="icon" type="image/svg+xml" href="../assets/img/logo-icon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,36 +11,49 @@
   <link rel="stylesheet" href="../assets/css/base.css">
   <link rel="stylesheet" href="../assets/css/components.css">
   <link rel="stylesheet" href="../assets/css/forms.css">
+  <title>My dashboard | EduGlobal</title>
 </head>
 <body>
-  <header class="auth-header">
-    <div class="container">
-      <a href="../index.html" aria-label="EduGlobal home"><img src="../assets/img/logo.svg" alt="EduGlobal" width="145" height="38"></a>
-      <button class="btn btn-ghost btn-sm" id="logout" type="button">Log out</button>
-    </div>
-  </header>
+  <div class="app">
+    <header class="app-top">
+      <a href="../index.html"><img src="../assets/img/logo.svg" alt="EduGlobal" width="146" height="40"></a>
+      <button class="btn btn-ghost btn-sm js-logout" type="button">Log out</button>
+    </header>
 
-  <main class="auth-page">
-    <div class="auth-card">
-      <p id="loading">Loading your dashboard...</p>
-      <div id="content" hidden>
-        <h1 id="welcome"></h1>
-        <p class="sub">Your account is working. The full dashboard (courses, live classes, progress) is built in Stage 5.</p>
-        <dl class="profile-list">
-          <div><dt>Email</dt><dd id="p-email"></dd></div>
-          <div><dt>Country</dt><dd id="p-country"></dd></div>
-          <div><dt>Curriculum</dt><dd id="p-curriculum"></dd></div>
-          <div><dt>Level</dt><dd id="p-level"></dd></div>
-          <div><dt>Subjects</dt><dd id="p-subjects"></dd></div>
-        </dl>
+    <aside class="app-side">
+      <a class="logo" href="../index.html"><img src="../assets/img/logo.svg" alt="EduGlobal" width="146" height="40"></a>
+      <nav class="side-nav" aria-label="Dashboard">
+        <a class="active" href="dashboard.html">Dashboard</a>
+        <span class="later">My Courses <em>Soon</em></span>
+        <span class="later">Live Classes <em>Soon</em></span>
+        <span class="later">CBT Practice <em>Soon</em></span>
+        <span class="later">AI Study Assistant <em>Soon</em></span>
+        <span class="later">My Progress <em>Soon</em></span>
+      </nav>
+      <div class="side-bottom"><button class="btn btn-ghost btn-sm btn-block js-logout" type="button">Log out</button></div>
+    </aside>
+
+    <main class="app-main">
+      <div class="panel">
+        <p id="loading">Loading your dashboard...</p>
+        <div id="content" hidden>
+          <h1 id="welcome"></h1>
+          <p>Your account is working. The full dashboard (courses, live classes, progress) is built in Stage 5.</p>
+          <dl class="profile-list">
+            <div><dt>Email</dt><dd id="p-email"></dd></div>
+            <div><dt>Country</dt><dd id="p-country"></dd></div>
+            <div><dt>Curriculum</dt><dd id="p-curriculum"></dd></div>
+            <div><dt>Level</dt><dd id="p-level"></dd></div>
+            <div><dt>Subjects</dt><dd id="p-subjects"></dd></div>
+          </dl>
+        </div>
       </div>
-    </div>
-  </main>
+    </main>
+  </div>
 
   <script type="module">
     import { requireStudent, logout } from "../assets/js/auth.js";
     import { CURRICULA } from "../assets/js/curricula-data.js";
-
     const $ = (id) => document.getElementById(id);
 
     requireStudent((user, profile) => {
@@ -57,10 +69,10 @@
       $("content").hidden = false;
     });
 
-    $("logout").addEventListener("click", async () => {
+    document.querySelectorAll(".js-logout").forEach((btn) => btn.addEventListener("click", async () => {
       await logout();
       window.location.href = "../index.html";
-    });
+    }));
   </script>
 </body>
   </html>
