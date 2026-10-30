@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Create your account | EduGlobal</title>
+  <meta name="theme-color" content="#06152E">
+  <link rel="icon" type="image/svg+xml" href="../assets/img/logo-icon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/forms.css">
+</head>
+<body>
+  <header class="auth-header">
+    <div class="container">
+      <a href="../index.html" aria-label="EduGlobal home"><img src="../assets/img/logo.svg" alt="EduGlobal" width="145" height="38"></a>
+      <a class="back" href="../index.html">Back to home</a>
+    </div>
+  </header>
+
+  <main class="auth-page">
+    <div class="auth-card">
+      <h1>Create your student account</h1>
+      <p class="sub">Tell us a little about you so we can set up your dashboard.</p>
+
+      <div id="message" class="message" role="alert"></div>
+
+      <form id="register-form" novalidate>
+        <div class="field">
+          <label for="fullName">Full name</label>
+          <input class="input" id="fullName" type="text" autocomplete="name" maxlength="80" required>
+        </div>
+        <div class="field">
+          <label for="email">Email address</label>
+          <input class="input" id="email" type="email" autocomplete="email" inputmode="email" required>
+        </div>
+        <div class="two-col">
+          <div class="field">
+            <label for="password">Password</label>
+            <input class="input" id="password" type="password" autocomplete="new-password" minlength="8" required>
+            <p class="hint">At least 8 characters.</p>
+          </div>
+          <div class="field">
+            <label for="confirm">Confirm password</label>
+            <input class="input" id="confirm" type="password" autocomplete="new-password" required>
+          </div>
+        </div>
+        <div class="field">
+          <label for="country">Country</label>
+          <select class="input" id="country" required><option value="">Select your country</option></select>
+        </div>
+        <div class="two-col">
+          <div class="field">
+            <label for="curriculum">Curriculum</label>
+            <select class="input" id="curriculum" required><option value="">Select curriculum</option></select>
+          </div>
+          <div class="field">
+            <label for="level">Educational level</label>
+            <select class="input" id="level" required disabled><option value="">Choose a curriculum first</option></select>
+          </div>
+        </div>
+        <fieldset class="field">
+          <legend>Subjects you want to study</legend>
+          <div class="check-grid" id="subjects"></div>
+        </fieldset>
+        <label class="check consent">
+          <input type="checkbox" id="consent">
+          <span>I am 13 or older, or my parent or guardian knows I am joining. We only collect the information needed to run your account.</span>
+        </label>
+        <div style="height:1.2rem"></div>
+        <button class="btn btn-primary btn-block" id="submit" type="submit">Create account</button>
+      </form>
+
+      <p class="auth-switch">Already have an account? <a href="student-login.html">Log in</a></p>
+    </div>
+  </main>
+
+  <script type="module">
+    import { registerStudent, friendlyError } from "../assets/js/auth.js";
+    import { isConfigured } from "../assets/js/firebase-config.js";
+    import { COUNTRIES, CURRICULA, SUBJECTS } from "../assets/js/curricula-data.js";
+
+    const $ = (id) => document.getElementById(id);
+    const form = $("register-form");
+    const messageBox = $("message");
+    const submitBtn = $("submit");
+
+    function showMessage(text, type) {
+      messageBox.textContent = text;
+      messageBox.className = "message show " + type;
+      messageBox.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    // Fill the dropdowns from curricula-data.js
+    COUNTRIES.forEach((c) => $("country").add(new Option(c, c)));
+    Object.entries(CURRICULA).forEach(([id, item]) => $("curriculum").add(new Option(item.name, id)));
+    SUBJECTS.forEach((name) => {
+      const label = document.createElement("label");
+      label.className = "check";
+      const box = document.createElement("input");
+      box.type = "checkbox"; box.value = name; box.name = "subject";
+      const text = document.createElement("span");
+      text.textContent = name;
+      label.append(box, text);
+      $("subjects").append(label);
+    });
+
+    // When a curriculum is chosen, show its levels
+    $("curriculum").addEventListener("change", () => {
+      const level = $("level");
+      level.innerHTML = "";
+      const curriculum = CURRICULA[$("curriculum").value];
+      if (!curriculum) {
+        level.add(new Option("Choose a curriculum first", ""));
+        level.disabled = true;
+        return;
+      }
+      level.add(new Option("Select your level", ""));
+      const groups = {};
+      curriculum.levels.forEach((item) => {
+        if (!groups[item.group]) {
+          groups[item.group] = document.createElement("optgroup");
+          groups[item.group].label = item.group;
+          level.append(groups[item.group]);
+        }
+        groups[item.group].append(new Option(item.label, item.id));
+      });
+      level.disabled = false;
+    });
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      messageBox.className = "message";
+
+      if (!isConfigured) {
+        showMessage("Firebase is not set up yet. Paste your Firebase details into assets/js/firebase-config.js.", "error");
+        return;
+      }
+
+      const data = {
+        fullName: $("fullName").value.trim(),
+        email: $("email").value.trim().toLowerCase(),
+        password: $("password").value,
+        country: $("country").value,
+        curriculum: $("curriculum").value,
+        level: $("level").value,
+        subjects: [...document.querySelectorAll("input[name=subject]:checked")].map((box) => box.value)
+      };
+
+      if (data.fullName.length < 2) return showMessage("Please enter your full name.", "error");
+      if (!/^\S+@\S+\.\S+$/.test(data.email)) return showMessage("Please enter a valid email address.", "error");
+      if (data.password.length < 8) return showMessage("Your password must be at least 8 characters.", "error");
+      if (data.password !== $("confirm").value) return showMessage("The two passwords do not match.", "error");
+      if (!data.country) return showMessage("Please select your country.", "error");
+      if (!data.curriculum) return showMessage("Please select your curriculum.", "error");
+      if (!data.level) return showMessage("Please select your educational level.", "error");
+      if (data.subjects.length === 0) return showMessage("Please choose at least one subject.", "error");
+      if (!$("consent").checked) return showMessage("Please confirm the age and privacy statement.", "error");
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Creating your account...";
+      try {
+        await registerStudent(data);
+        showMessage("Account created. Taking you to your dashboard...", "success");
+        setTimeout(() => { window.location.href = "../student/dashboard.html"; }, 900);
+      } catch (error) {
+        showMessage(friendlyError(error), "error");
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Create account";
+      }
+    });
+  </script>
+</body>
+  </html>
+  
