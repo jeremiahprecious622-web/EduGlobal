@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contact | EduGlobal</title>
+  <meta name="description" content="Contact EduGlobal by email, phone or WhatsApp.">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="icon" type="image/svg+xml" href="assets/img/logo-icon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/base.css">
+  <link rel="stylesheet" href="assets/css/components.css">
+  <link rel="stylesheet" href="assets/css/pages.css">
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <main>
+    <section class="page-hero"><div class="container">
+      <span class="kicker">Contact</span>
+      <h1>We would love to hear from you</h1>
+      <p>Questions about classes, accounts or teaching with us? Reach out using any option below.</p>
+    </div></section>
+
+    <section class="section"><div class="container">
+      <p id="contact-loading">Loading contact details...</p>
+      <div class="contact-list" id="contact-list"></div>
+      <div class="empty" id="contact-empty" hidden>
+        <div class="card-icon t-blue"><svg class="icon"><use href="#i-mail"/></svg></div>
+        <h3>Contact details are coming soon</h3>
+        <p>Please check back shortly.</p>
+      </div>
+    </div></section>
+  </main>
+  <div id="site-footer"></div>
+  <script type="module" src="assets/js/layout.js"></script>
+  <script type="module">
+    const list = document.getElementById("contact-list");
+    function addCard(icon, tint, label, text, href) {
+      const a = document.createElement("a"); a.className = "card contact-card"; a.href = href;
+      if (href.startsWith("https://")) { a.target = "_blank"; a.rel = "noopener noreferrer"; }
+      const box = document.createElement("div"); box.className = "card-icon " + tint;
+      box.innerHTML = '<svg class="icon"><use href="#' + icon + '"/></svg>';
+      const info = document.createElement("div");
+      const strong = document.createElement("strong"); strong.textContent = label;
+      const span = document.createElement("span"); span.textContent = text;
+      info.append(strong, span); a.append(box, info); list.append(a);
+    }
+    let data = {};
+    try {
+      const F = await import("./assets/js/firebase-config.js");
+      const FS = await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js");
+      const snap = await FS.getDoc(FS.doc(F.db, "settings", "contact"));
+      data = snap.exists() ? snap.data() : {};
+    } catch (e) { data = {}; }
+    if (/^\S+@\S+\.\S+$/.test(data.email || "")) addCard("i-mail", "t-blue", "Email", data.email, "mailto:" + data.email);
+    if (/^[+0-9 ()-]{7,20}$/.test(data.phone || "")) addCard("i-phone", "t-violet", "Phone", data.phone, "tel:" + data.phone.replace(/[^+0-9]/g, ""));
+    if ((data.whatsapp || "").startsWith("https://wa.me/")) addCard("i-whatsapp", "t-green", "WhatsApp", "Chat with us", data.whatsapp);
+    document.getElementById("contact-loading").hidden = true;
+    if (!list.children.length) document.getElementById("contact-empty").hidden = false;
+  </script>
+</body>
+                                 </html>
+  
