@@ -28,7 +28,7 @@ export function daysText() {
   return `Every ${list}, ${formatTime(LIVE.start)} to ${formatTime(LIVE.end)}`;
 }
 
-function nowInSchoolTime() {
+export function nowInSchoolTime() {
   const parts = new Intl.DateTimeFormat("en-US", {
     timeZone: LIVE.timezone, weekday: "short", year: "numeric", month: "numeric", day: "numeric",
     hour: "2-digit", minute: "2-digit", hourCycle: "h23"
@@ -72,5 +72,19 @@ export function upcomingClasses(count = 4) {
     });
   }
   return list;
-                                                          }
-    
+}
+
+// ----- Helpers used by the class system -----
+export function windowOpen() { return liveStatus().live; }
+export function todayIndex() { return nowInSchoolTime().day; }
+export function classTimeText(c) { return formatTime(c.start) + " to " + formatTime(c.end); }
+export function meetLinkOk(link) {
+  return typeof link === "string" && /^https:\/\/meet\.google\.com\/[a-zA-Z0-9\/_?=&.-]{3,80}$/.test(link);
+}
+// A session counts as live only if it is marked live, has a real link, and started in the last 3 hours
+export function isSessionLive(s) {
+  if (!s || s.status !== "live" || !meetLinkOk(s.meetLink)) return false;
+  const started = s.startedAt && s.startedAt.toMillis ? s.startedAt.toMillis() : Date.now();
+  return Date.now() - started < 3 * 60 * 60 * 1000;
+      }
+  
