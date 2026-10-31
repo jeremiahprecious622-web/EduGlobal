@@ -72,9 +72,8 @@
   </main>
 
   <script type="module">
-    import { registerStudent, friendlyError } from "../assets/js/auth.js";
-    import { isConfigured } from "../assets/js/firebase-config.js";
-    import { COUNTRIES, CURRICULA, SUBJECTS } from "../assets/js/curricula-data.js";
+    // The lists are loaded safely below, so the form still works if a file is missing.
+    let COUNTRIES = [], CURRICULA = {}, SUBJECTS = [];
 
     const $ = (id) => document.getElementById(id);
     const form = $("register-form"), messageBox = $("message"), submitBtn = $("submit");
@@ -85,7 +84,7 @@
       messageBox.scrollIntoView({ behavior: "smooth", block: "center" });
     }
 
-    // Fill dropdowns and subjects
+    function fillLists() {
     COUNTRIES.forEach((c) => $("country").add(new Option(c, c)));
     Object.entries(CURRICULA).forEach(([id, item]) => $("curriculum").add(new Option(item.name, id)));
     SUBJECTS.forEach((name) => {
@@ -94,6 +93,7 @@
       const text = document.createElement("span"); text.textContent = name;
       label.append(box, text); $("subjects").append(label);
     });
+    }
 
     $("curriculum").addEventListener("change", () => {
       const level = $("level"); level.innerHTML = "";
@@ -167,23 +167,44 @@
     form.addEventListener("change", check);
     check();
 
+    // Load the country / curriculum / subject lists
+    (async () => {
+      try {
+        const m = await import("../assets/js/curricula-data.js");
+        COUNTRIES = m.COUNTRIES; CURRICULA = m.CURRICULA; SUBJECTS = m.SUBJECTS;
+        fillLists();
+      } catch (e) {
+        showMessage("Could not load assets/js/curricula-data.js. Check that this file is inside assets/js and is spelled exactly that way.", "error");
+      }
+    })();
+
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       messageBox.className = "message";
       if (!check()) return;
-      if (!isConfigured) return showMessage("Firebase is not set up yet. Paste your Firebase details into assets/js/firebase-config.js.", "error");
+
+      let api;
+      try {
+        const authModule = await import("../assets/js/auth.js");
+        const configModule = await import("../assets/js/firebase-config.js");
+        api = { registerStudent: authModule.registerStudent, friendlyError: authModule.friendlyError, isConfigured: configModule.isConfigured };
+      } catch (e) {
+        return showMessage("Could not load the Firebase files. Check that auth.js and firebase-config.js are inside assets/js, and that firebase-config.js has no typing mistakes (every value in quotes, with a comma after it).", "error");
+      }
+      if (!api.isConfigured) return showMessage("Firebase is not set up yet. Paste your Firebase details into assets/js/firebase-config.js.", "error");
+
       submitBtn.disabled = true; submitBtn.textContent = "Creating your account...";
       try {
-        await registerStudent(getData());
-        showMessage("Account created. Taking you to your dashboard...", "success");
-        setTimeout(() => { window.location.href = "../student/dashboard.html"; }, 900);
+        await api.registerStudent(getData());
+        showMessage("Account created. We are sending a verification email...", "success");
+        setTimeout(() => { window.location.href = "verify-email.html"; }, 900);
       } catch (error) {
-        showMessage(friendlyError(error), "error");
+        showMessage(api.friendlyError(error), "error");
         submitBtn.textContent = "Create account";
         check();
       }
     });
   </script>
 </body>
-        </html>
-                                                                    
+      </html>
+        
