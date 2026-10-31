@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="robots" content="noindex">
+  <title>Class schedule | EduGlobal</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/img/logo-icon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/dashboard.css">
+</head>
+<body>
+<div class="app">
+<main class="app-main">
+  <p id="loading">Loading...</p>
+  <div id="content" hidden>
+    <div class="hello"><h1>Class schedule</h1><p>Live classes run on Mondays, Thursdays and Fridays between 5:00 PM and 8:00 PM (Nigeria time).</p></div>
+    <div class="panel" style="margin-bottom:1.4rem">
+      <h2 style="font-size:1.1rem;margin-top:0">Add a class</h2>
+      <div class="dash-form">
+        <div><label for="f-subject">Subject</label><select class="dash-input" id="f-subject"><option value="">Select subject</option></select></div>
+        <div><label for="f-teacher">Teacher</label><select class="dash-input" id="f-teacher" disabled><option value="">Choose a subject first</option></select></div>
+        <div><label for="f-day">Day</label><select class="dash-input" id="f-day"></select></div>
+        <div><label for="f-start">Starts</label><input class="dash-input" id="f-start" type="time" min="17:00" max="19:45" step="900" value="17:00"></div>
+        <div><label for="f-end">Ends</label><input class="dash-input" id="f-end" type="time" min="17:15" max="20:00" step="900" value="18:00"></div>
+        <div><label for="f-title">Title (optional)</label><input class="dash-input" id="f-title" type="text" maxlength="80" placeholder="e.g. Quadratic Equations"></div>
+      </div>
+      <p class="today-note" id="f-hint" style="margin:1rem 0 0" hidden></p>
+      <div class="row-actions"><button class="btn btn-primary btn-sm" id="f-add" type="button">Add class</button></div>
+    </div>
+    <div id="schedule"></div>
+  </div>
+</main>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+<script type="module">
+const $ = (id) => document.getElementById(id);
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
+
+let A, F, FS, D, L, S;
+try {
+  A = await import("../assets/js/auth.js");
+  F = await import("../assets/js/firebase-config.js");
+  FS = await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js");
+  D = await import("../assets/js/curricula-data.js");
+  L = await import("../assets/js/live-schedule.js");
+  S = await import("../assets/js/shell.js");
+} catch (e) {
+  $("loading").textContent = "Could not load a page file. Check that auth.js, firebase-config.js, curricula-data.js, live-schedule.js and shell.js are all inside assets/js.";
+  throw e;
+}
+let toastTimer;
+function toast(text) { const t = $("toast"); t.textContent = text; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 5000); }
+const DAYS = { 1: "Monday", 4: "Thursday", 5: "Friday" };
+S.mountShell({ items: [
+  { path: "admin/dashboard", label: "Dashboard", icon: "home" },
+  { path: "admin/manage-teachers", label: "Teachers", icon: "users" },
+  { path: "admin/live-classes", label: "Classes", icon: "calendar" },
+  { path: "teacher/dashboard", label: "Teaching", icon: "video" }
+], onLogout: async () => { await A.logout(); window.location.href = "../auth/teacher-login.html"; } });
+
+let teachers = [], classes = [];
+
+function fillSubjects() {
+  D.SUBJECTS.forEach((s) => $("f-subject").add(new Option(s, s)));
+  Object.entries(DAYS).forEach(([n, name]) => $("f-day").add(new Option(name, n)));
+}
+
+function fillTeachers() {
+  const sel = $("f-teacher"); sel.innerHTML = ""; const subject = $("f-subject").value;
+  const hint = $("f-hint");
+  if (!subject) { sel.add(new Option("Choose a subject first", "")); sel.disabled = true; hint.hidden = true; return; }
+  const able = teachers.filter((t) => t.status === "active" && (t.subjects || []).includes(subject));
+  if (!able.length) {
+    sel.add(new Option("No teacher assigned", "")); sel.disabled = true;
+    hint.textContent = "No active teacher is assigned to " + subject + " yet. Assign one on the Teachers page first."; hint.hidden = false; return;
+  }
+  sel.add(new Option("Select teacher", ""));
+  able.forEach((t) => sel.add(new Option(t.fullName, t.id)));
+  sel.disabled = false; hint.hidden = true;
+}
+
+async function load() {
+  teachers = (await FS.getDocs(FS.collection(F.db, "teachers"))).docs.map((d) => ({ id: d.id, ...d.data() }));
+  classes = (await FS.getDocs(FS.collection(F.db, "classes"))).docs.map((d) => ({ id: d.id, ...d.data() }));
+  fillTeachers(); renderSchedule();
+}
+
+function renderSchedule() {
+  const box = $("schedule"); box.innerHTML = "";
+  if (!classes.length) { box.append(el("p", "today-note", "No classes yet. Add the first one above.")); return; }
+  [1, 4, 5].forEach((day) => {
+    const list = classes.filter((c) => c.day === day).sort((a, b) => a.start.localeCompare(b.start));
+    if (!list.length) return;
+    box.append(el("p", "day-label", DAYS[day]));
+    list.forEach((c) => {
+      const card = el("div", "item-card"); const head = el("div", "item-head");
+      const info = el("div"); info.append(el("h3", "", c.subject + " - " + c.title), el("p", "", L.classTimeText(c) + " - " + c.teacherName));
+      head.append(info, el("span", "status " + (c.active ? "green" : "grey"), c.active ? "Active" : "Paused"));
+      const actions = el("div", "row-actions");
+      const pause = el("button", "btn btn-ghost btn-sm", c.active ? "Pause" : "Resume"); pause.type = "button";
+      pause.addEventListener("click", async () => {
+        try { await FS.updateDoc(FS.doc(F.db, "classes", c.id), { active: !c.active }); await load(); } catch (e) { toast("Could not update the class."); }
+      });
+      const del = el("button", "btn btn-danger btn-sm", "Delete"); del.type = "button";
+      del.addEventListener("click", async () => {
+        if (!confirm("Delete this class from the timetable?")) return;
+        try { await FS.deleteDoc(FS.doc(F.db, "classes", c.id)); await load(); } catch (e) { toast("Could not delete the class."); }
+      });
+      actions.append(pause, del); card.append(head, actions); box.append(card);
+    });
+  });
+}
+
+$("f-add").addEventListener("click", async () => {
+  const subject = $("f-subject").value, teacherUid = $("f-teacher").value, day = Number($("f-day").value);
+  const start = $("f-start").value, end = $("f-end").value;
+  const title = $("f-title").value.trim() || subject + " Live Class";
+  const teacher = teachers.find((t) => t.id === teacherUid);
+  if (!subject || !teacher) return toast("Please choose a subject and a teacher.");
+  if (!/^1[7-9]:[0-5][0-9]$/.test(start) || !(/^1[7-9]:[0-5][0-9]$/.test(end) || end === "20:00")) return toast("Class times must be between 5:00 PM and 8:00 PM.");
+  if (start >= end) return toast("The end time must be after the start time.");
+  const clash = classes.find((c) => c.active && c.teacherUid === teacherUid && c.day === day && start < c.end && end > c.start);
+  if (clash) return toast(teacher.fullName + " already has a class at that time.");
+  try {
+    await FS.addDoc(FS.collection(F.db, "classes"), { subject, title, teacherUid, teacherName: teacher.fullName, day, start, end, active: true, createdAt: FS.serverTimestamp() });
+    toast("Class added."); $("f-title").value = ""; await load();
+  } catch (e) { toast("Could not add the class. Check that the new rules are published."); }
+});
+$("f-subject").addEventListener("change", fillTeachers);
+
+fillSubjects();
+A.requireRole(["superadmin"], async () => {
+  try { await load(); } catch (e) { toast("Could not load the schedule. Check that the new rules are published."); }
+  $("loading").hidden = true; $("content").hidden = false;
+});
+
+</script>
+</body>
+          </html>
+                                                            
