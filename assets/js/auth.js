@@ -10,6 +10,14 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import { doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
+// A small note saved on this device so the website can remember who is logged in
+function rememberSession(role) {
+  try { localStorage.setItem("eg_role", role); localStorage.setItem("eg_last_active", String(Date.now())); } catch (e) {}
+}
+function forgetSession() {
+  try { localStorage.removeItem("eg_role"); localStorage.removeItem("eg_last_active"); } catch (e) {}
+}
+
 // Where the student lands after clicking the link in the verification email
 function dashboardUrl() { return window.location.origin + "/student/dashboard.html"; }
 
@@ -61,6 +69,7 @@ export async function registerStudent(data) {
   } catch (error) {
     // The account exists. The student can tap "Resend email" on the next page.
   }
+  rememberSession("student");
   return cred.user;
 }
 
@@ -72,11 +81,12 @@ export async function loginStudent(email, password) {
   const profile = snap.data();
   if (profile.status !== "active") { await signOut(auth); throw new Error("SUSPENDED"); }
   if (profile.role !== "student") { await signOut(auth); throw new Error("NOT_STUDENT"); }
+  rememberSession("student");
   return { profile, emailVerified: cred.user.emailVerified };
 }
 
 export function resetPassword(email) { return sendPasswordResetEmail(auth, email); }
-export function logout() { return signOut(auth); }
+export function logout() { forgetSession(); return signOut(auth); }
 
 // ----- Email verification helpers (used by verify-email.html) -----
 export function requireSignedIn(onReady) {
@@ -108,6 +118,7 @@ export function requireStudent(onReady) {
         window.location.replace(loginPage);
         return;
       }
+      rememberSession("student");
       onReady(user, profile);
     } catch (error) {
       window.location.replace(loginPage);
@@ -123,6 +134,7 @@ export async function loginStaff(email, password) {
   const profile = snap.data();
   if (profile.status !== "active") { await signOut(auth); throw new Error("SUSPENDED"); }
   if (!["teacher", "superadmin"].includes(profile.role)) { await signOut(auth); throw new Error("NOT_STAFF"); }
+  rememberSession(profile.role);
   return { profile, emailVerified: cred.user.emailVerified };
 }
 
@@ -141,10 +153,29 @@ export function requireRole(roles, onReady) {
         window.location.replace(loginPage);
         return;
       }
+      rememberSession(profile.role);
       onReady(user, profile);
     } catch (error) {
       window.location.replace(loginPage);
     }
   });
-    }
-                 
+}
+
+// On the login and register pages: if this device is already logged in,
+// go straight to the right dashboard. (Checks only once, when the page opens.)
+export function redirectIfSignedIn() {
+  const stop = onAuthStateChanged(auth, async (user) => {
+    stop();
+    if (!user) return;
+    try {
+      if (!user.emailVerified) await reload(user);
+      if (!user.emailVerified) { window.location.replace("verify-email.html"); return; }
+      const snap = await getDoc(doc(db, "users", user.uid));
+      const p = snap.exists() ? snap.data() : null;
+      if (!p || p.status !== "active") return;
+      const dest = { student: "../student/dashboard.html", teacher: "../teacher/dashboard.html", superadmin: "../admin/dashboard.html" }[p.role];
+      if (dest) { rememberSession(p.role); window.location.replace(dest); }
+    } catch (e) { /* stay on this page */ }
+  });
+      }
+    
