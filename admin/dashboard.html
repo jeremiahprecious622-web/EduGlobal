@@ -58,7 +58,7 @@ try {
 }
 let toastTimer;
 function toast(text) { const t = $("toast"); t.textContent = text; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 5000); }
-const DAYS = { 1: "Monday", 4: "Thursday", 5: "Friday" };
+const DAYS = { 1: "Monday", 2: "Tuesday", 3: "Wednesday", 4: "Thursday", 5: "Friday", 6: "Saturday" };
 S.mountShell({ items: [
   { path: "admin/dashboard", label: "Dashboard", icon: "home" },
   { path: "admin/manage-teachers", label: "Teachers", icon: "users" },
@@ -79,6 +79,11 @@ A.requireRole(["superadmin"], async (user, profile) => {
   const list = $("today"); let live = 0;
   if (!today.length) list.append(el("p", "today-note", "No classes are scheduled for today."));
   for (const c of today) {
+    if (c.mode === "room") {
+      const rrow = el("div", "today-row"); const rleft = el("div");
+      rleft.append(el("strong", "", c.subject + " - " + c.title), el("small", "", L.classTimeText(c) + " - " + c.teacherName));
+      rrow.append(rleft, el("span", "status", "Classroom day")); list.append(rrow); continue;
+    }
     let session = null;
     try { const s = await FS.getDoc(FS.doc(F.db, "liveSessions", c.id)); session = s.exists() ? s.data() : null; } catch (e) {}
     const isLive = L.isSessionLive(session); if (isLive) live++;
@@ -93,5 +98,5 @@ A.requireRole(["superadmin"], async (user, profile) => {
 
 </script>
 </body>
-  </html>
-                                                                                    
+                          </html>
+                                                                             
