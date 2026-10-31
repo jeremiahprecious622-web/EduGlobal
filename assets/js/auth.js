@@ -29,7 +29,8 @@ export function friendlyError(error) {
     "permission-denied": "Something went wrong saving your profile. Please try again.",
     "NO_PROFILE": "We could not find your student profile. Please register first.",
     "SUSPENDED": "This account has been suspended. Please contact EduGlobal support.",
-    "NOT_STUDENT": "This is not a student account. Please use the teacher login page."
+    "NOT_STUDENT": "This is not a student account. Please use the teacher login page.",
+    "NOT_STAFF": "This is not a teacher or administrator account. Students should use the student login."
   };
   return messages[code] || "Something went wrong. Please try again.";
 }
@@ -112,5 +113,38 @@ export function requireStudent(onReady) {
       window.location.replace(loginPage);
     }
   });
+}
+
+// ----- Teachers and administrators -----
+export async function loginStaff(email, password) {
+  const cred = await signInWithEmailAndPassword(auth, email, password);
+  const snap = await getDoc(doc(db, "users", cred.user.uid));
+  if (!snap.exists()) { await signOut(auth); throw new Error("NO_PROFILE"); }
+  const profile = snap.data();
+  if (profile.status !== "active") { await signOut(auth); throw new Error("SUSPENDED"); }
+  if (!["teacher", "superadmin"].includes(profile.role)) { await signOut(auth); throw new Error("NOT_STAFF"); }
+  return { profile, emailVerified: cred.user.emailVerified };
+}
+
+// Protects a staff page. Usage: requireRole(["superadmin"], (user, profile) => { ... });
+export function requireRole(roles, onReady) {
+  onAuthStateChanged(auth, async (user) => {
+    const loginPage = "../auth/teacher-login.html";
+    if (!user) { window.location.replace(loginPage); return; }
+    try {
+      if (!user.emailVerified) await reload(user);
+      if (!user.emailVerified) { window.location.replace("../auth/verify-email.html"); return; }
+      const snap = await getDoc(doc(db, "users", user.uid));
+      const profile = snap.exists() ? snap.data() : null;
+      if (!profile || !roles.includes(profile.role) || profile.status !== "active") {
+        await signOut(auth);
+        window.location.replace(loginPage);
+        return;
+      }
+      onReady(user, profile);
+    } catch (error) {
+      window.location.replace(loginPage);
     }
-  
+  });
+    }
+                 
