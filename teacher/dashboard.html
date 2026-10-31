@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#ffffff">
   <meta name="robots" content="noindex">
-  <title>Admin dashboard | EduGlobal</title>
+  <title>Teacher dashboard | EduGlobal</title>
   <link rel="icon" type="image/svg+xml" href="../assets/img/logo-icon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,23 +19,25 @@
 <main class="app-main">
   <p id="loading">Loading...</p>
   <div id="content" hidden>
-    <div class="hello"><h1>Administrator dashboard</h1><p id="who"></p></div>
-    <div class="stat-grid">
-      <div class="stat"><span>Students</span><strong id="n-students">0</strong></div>
-      <div class="stat"><span>Teachers</span><strong id="n-teachers">0</strong></div>
-      <div class="stat"><span>Weekly classes</span><strong id="n-classes">0</strong></div>
-      <div class="stat"><span>Live now</span><strong id="n-live">0</strong></div>
-    </div>
-    <h2 class="section-label">Today's classes</h2>
-    <div class="today-list" id="today"></div>
-    <h2 class="section-label">Quick actions</h2>
-    <div class="btn-row">
-      <a class="btn btn-primary btn-sm" href="manage-teachers.html">Assign teachers to subjects</a>
-      <a class="btn btn-ghost btn-sm" href="live-classes.html">Manage class schedule</a>
-      <a class="btn btn-ghost btn-sm" href="../teacher/dashboard.html">My teaching</a>
-    </div>
-    <h2 class="section-label">Teacher recruitment</h2>
-    <p class="today-note">Teacher applications, document review and the 10-teacher limit come in the next update.</p>
+    <section class="view" data-view="today">
+      <div class="hello"><h1>Today's lessons</h1><p id="today-sub"></p></div>
+      <div id="today-list"></div>
+    </section>
+    <section class="view" data-view="classes">
+      <h1 class="view-title">My classes</h1>
+      <div id="week-list"></div>
+    </section>
+    <section class="view" data-view="profile">
+      <h1 class="view-title">Profile</h1>
+      <div class="panel">
+        <dl class="profile-list">
+          <div><dt>Name</dt><dd id="p-name"></dd></div>
+          <div><dt>Email</dt><dd id="p-email"></dd></div>
+          <div><dt>Subjects assigned to you</dt><dd id="p-subjects"></dd></div>
+        </dl>
+        <div class="btn-row" id="p-actions"></div>
+      </div>
+    </section>
   </div>
 </main>
 </div>
@@ -60,38 +62,123 @@ let toastTimer;
 function toast(text) { const t = $("toast"); t.textContent = text; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 5000); }
 const DAYS = { 1: "Monday", 4: "Thursday", 5: "Friday" };
 S.mountShell({ items: [
-  { path: "admin/dashboard", label: "Dashboard", icon: "home" },
-  { path: "admin/manage-teachers", label: "Teachers", icon: "users" },
-  { path: "admin/live-classes", label: "Classes", icon: "calendar" },
-  { path: "teacher/dashboard", label: "Teaching", icon: "video" }
+  { path: "teacher/dashboard", hash: "today", default: true, label: "Today", icon: "video" },
+  { path: "teacher/dashboard", hash: "classes", label: "My classes", icon: "calendar" },
+  { path: "teacher/dashboard", hash: "profile", label: "Profile", icon: "user" }
 ], onLogout: async () => { await A.logout(); window.location.href = "../auth/teacher-login.html"; } });
 
-A.requireRole(["superadmin"], async (user, profile) => {
-  $("who").textContent = "Signed in as " + profile.fullName;
-  const count = async (q) => { try { return (await FS.getCountFromServer(q)).data().count; } catch (e) { return "-"; } };
-  $("n-students").textContent = await count(FS.query(FS.collection(F.db, "users"), FS.where("role", "==", "student")));
-  $("n-teachers").textContent = await count(FS.collection(F.db, "teachers"));
-  $("n-classes").textContent = await count(FS.collection(F.db, "classes"));
+let user, profile, teacher = null, classes = [], sessions = {};
+const VIEWS = ["today", "classes", "profile"];
 
-  let classes = [];
-  try { classes = (await FS.getDocs(FS.collection(F.db, "classes"))).docs.map((d) => ({ id: d.id, ...d.data() })); } catch (e) { toast("Could not load classes."); }
-  const today = classes.filter((c) => c.active && c.day === L.todayIndex()).sort((a, b) => a.start.localeCompare(b.start));
-  const list = $("today"); let live = 0;
-  if (!today.length) list.append(el("p", "today-note", "No classes are scheduled for today."));
+function show(name) {
+  if (!VIEWS.includes(name)) name = "today";
+  document.querySelectorAll(".view").forEach((v) => v.classList.toggle("active", v.dataset.view === name));
+}
+window.addEventListener("hashchange", () => show(location.hash.slice(1)));
+
+function savedLink() { try { return localStorage.getItem("eg_meet_" + user.uid) || ""; } catch (e) { return ""; } }
+function saveLink(v) { try { localStorage.setItem("eg_meet_" + user.uid, v); } catch (e) {} }
+
+async function loadSessions() {
+  const today = classes.filter((c) => c.day === L.todayIndex());
   for (const c of today) {
-    let session = null;
-    try { const s = await FS.getDoc(FS.doc(F.db, "liveSessions", c.id)); session = s.exists() ? s.data() : null; } catch (e) {}
-    const isLive = L.isSessionLive(session); if (isLive) live++;
-    const row = el("div", "today-row" + (isLive ? " live" : ""));
-    const left = el("div"); left.append(el("strong", "", c.subject + " - " + c.title), el("small", "", L.classTimeText(c) + " - " + c.teacherName));
-    row.append(left, el("span", "status " + (isLive ? "green" : "grey"), isLive ? "Live now" : "Not started"));
-    list.append(row);
+    try { const s = await FS.getDoc(FS.doc(F.db, "liveSessions", c.id)); sessions[c.id] = s.exists() ? s.data() : null; } catch (e) { sessions[c.id] = null; }
   }
-  $("n-live").textContent = live;
-  $("loading").hidden = true; $("content").hidden = false;
+}
+
+function renderToday() {
+  const box = $("today-list"); box.innerHTML = "";
+  const open = L.windowOpen();
+  const today = classes.filter((c) => c.day === L.todayIndex()).sort((a, b) => a.start.localeCompare(b.start));
+  $("today-sub").textContent = open ? "The class window is open until " + L.formatTime(L.LIVE.end) + "." : "Lessons can be started Mondays, Thursdays and Fridays from " + L.formatTime(L.LIVE.start) + " to " + L.formatTime(L.LIVE.end) + " (Nigeria time).";
+  if (!today.length) { box.append(el("p", "today-note", "You have no classes today.")); return; }
+
+  today.forEach((c) => {
+    const session = sessions[c.id]; const live = L.isSessionLive(session);
+    const card = el("div", "item-card"); const head = el("div", "item-head");
+    const info = el("div"); info.append(el("h3", "", c.subject + " - " + c.title), el("p", "", L.classTimeText(c)));
+    head.append(info, el("span", "status " + (live ? "green" : "grey"), live ? "Live now" : "Not started"));
+    card.append(head);
+
+    card.append(el("p", "", live
+      ? "Students can join now. If Google Meet ends the call (free calls can stop after about an hour), create a new meeting, paste the new link and tap Update link."
+      : "Create a meeting at meet.google.com/new, copy the link, paste it here, then tap Start lesson."));
+    const input = el("input", "dash-input"); input.type = "url"; input.placeholder = "https://meet.google.com/abc-defg-hij";
+    input.value = live ? session.meetLink : savedLink(); input.setAttribute("aria-label", "Google Meet link");
+    card.append(input);
+
+    const actions = el("div", "row-actions");
+    const start = el("button", "btn btn-primary btn-sm", live ? "Update link" : "Start lesson"); start.type = "button";
+    start.disabled = !open;
+    start.addEventListener("click", async () => {
+      const link = input.value.trim();
+      if (!L.meetLinkOk(link)) return toast("Please paste a Google Meet link. It starts with https://meet.google.com/");
+      start.disabled = true;
+      try {
+        await FS.setDoc(FS.doc(F.db, "liveSessions", c.id), {
+          classId: c.id, subject: c.subject, title: c.title, teacherUid: user.uid, teacherName: teacher.fullName,
+          meetLink: link, status: "live", startedAt: FS.serverTimestamp()
+        });
+        saveLink(link); toast("Lesson started. Students can now join."); await loadSessions(); renderToday();
+      } catch (e) { toast("Could not start. Lessons can only start on Monday, Thursday or Friday between 5:00 PM and 8:00 PM Nigeria time."); start.disabled = false; }
+    });
+    actions.append(start);
+    if (live) {
+      const openMeet = el("a", "btn btn-ghost btn-sm", "Open Google Meet"); openMeet.href = session.meetLink; openMeet.target = "_blank"; openMeet.rel = "noopener noreferrer";
+      const end = el("button", "btn btn-danger btn-sm", "End lesson"); end.type = "button";
+      end.addEventListener("click", async () => {
+        try { await FS.updateDoc(FS.doc(F.db, "liveSessions", c.id), { status: "ended", endedAt: FS.serverTimestamp(), meetLink: "" }); toast("Lesson ended."); await loadSessions(); renderToday(); }
+        catch (e) { toast("Could not end the lesson. Please try again."); }
+      });
+      actions.append(openMeet, end);
+    }
+    card.append(actions); box.append(card);
+  });
+}
+
+function renderWeek() {
+  const box = $("week-list"); box.innerHTML = "";
+  if (!classes.length) { box.append(el("p", "today-note", "No classes have been assigned to you yet.")); return; }
+  [1, 4, 5].forEach((day) => {
+    const list = classes.filter((c) => c.day === day).sort((a, b) => a.start.localeCompare(b.start));
+    if (!list.length) return;
+    box.append(el("p", "day-label", DAYS[day]));
+    list.forEach((c) => {
+      const card = el("div", "item-card"); const head = el("div", "item-head"); const info = el("div");
+      info.append(el("h3", "", c.subject + " - " + c.title), el("p", "", L.classTimeText(c)));
+      head.append(info); card.append(head); box.append(card);
+    });
+  });
+}
+
+A.requireRole(["teacher", "superadmin"], async (u, p) => {
+  user = u; profile = p;
+  try {
+    const t = await FS.getDoc(FS.doc(F.db, "teachers", user.uid));
+    teacher = t.exists() ? t.data() : null;
+    if (!teacher || teacher.status !== "active") {
+      $("loading").textContent = p.role === "superadmin"
+        ? "You are not set up as a teacher yet. Open the Teachers page in the admin area and tap Add me as a teacher."
+        : "Your teacher profile is not active. Please contact the administrator.";
+      return;
+    }
+    const snap = await FS.getDocs(FS.query(FS.collection(F.db, "classes"), FS.where("teacherUid", "==", user.uid)));
+    classes = snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((c) => c.active !== false);
+    await loadSessions();
+  } catch (e) { $("loading").textContent = "Could not load your classes. Check that the new rules are published."; return; }
+
+  $("p-name").textContent = teacher.fullName; $("p-email").textContent = teacher.email;
+  $("p-subjects").textContent = (teacher.subjects || []).join(", ") || "None yet";
+  if (p.role === "superadmin") {
+    const back = el("a", "btn btn-primary btn-sm", "Back to admin dashboard"); back.href = "../admin/dashboard.html"; $("p-actions").append(back);
+  }
+  renderToday(); renderWeek();
+  let lastOpen = L.windowOpen();
+  setInterval(() => { if (L.windowOpen() !== lastOpen) { lastOpen = L.windowOpen(); renderToday(); } }, 30000);
+  $("loading").hidden = true; $("content").hidden = false; show(location.hash.slice(1));
 });
 
 </script>
 </body>
-                          </html>
+  </html>
   
