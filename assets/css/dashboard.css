@@ -147,4 +147,27 @@ body { background: var(--soft); }
 .today-row strong { display: block; }
 .today-row small { color: var(--muted); font-size: 0.84rem; }
 .today-note { font-size: 0.92rem; padding: 0.9rem 1.1rem; background: #fff; border: 1px dashed #c9daf2; border-radius: var(--radius); margin: 0; }
-   
+
+/* ==========================================================
+   Classroom (lessons and chat)
+   ========================================================== */
+.room-title { font-size: 1.3rem; margin: 0 0 0.6rem; }
+.room-note { padding: 0.7rem 1rem; border-radius: 12px; background: var(--navy); color: #fff; font-weight: 600; font-size: 0.9rem; }
+.room-note[hidden] { display: none; }
+.room-form { display: grid; gap: 0.7rem; margin-bottom: 1rem; }
+.room-form textarea { resize: vertical; }
+.lesson-body { white-space: pre-wrap; margin: 0.7rem 0 0; color: var(--ink); font-size: 0.96rem; }
+.video-wrap { position: relative; aspect-ratio: 16 / 9; margin-top: 0.9rem; border-radius: 14px; overflow: hidden; background: #000; }
+.video-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.chat-rule { font-size: 0.84rem; margin: 0 0 0.6rem; }
+.chat-list { display: grid; gap: 0.6rem; align-content: start; max-height: 420px; min-height: 160px; overflow-y: auto; padding: 0.8rem; border: 1px solid var(--line); border-radius: var(--radius); background: #fff; }
+.msg { max-width: 88%; padding: 0.6rem 0.85rem; border-radius: 14px 14px 14px 4px; background: var(--soft); border: 1px solid var(--line); justify-self: start; }
+.msg.mine { justify-self: end; background: var(--sky); border-color: #bcd8fb; border-radius: 14px 14px 4px 14px; }
+.msg.staff { border-color: #f0d98a; background: #fff8e1; }
+.msg-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; font-size: 0.76rem; color: var(--muted); }
+.msg-meta strong { color: var(--ink); }
+.msg p { margin: 0.2rem 0 0; color: var(--ink); font-size: 0.94rem; overflow-wrap: anywhere; }
+.msg-del { margin-top: 0.3rem; border: 0; background: none; color: #a52525; font: inherit; font-size: 0.76rem; font-weight: 700; cursor: pointer; padding: 0; }
+.chat-form { display: flex; gap: 0.6rem; margin-top: 0.7rem; }
+.chat-form .dash-input { flex: 1; }
+.room-back { margin-bottom: 1rem; }
