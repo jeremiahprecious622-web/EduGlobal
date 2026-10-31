@@ -204,7 +204,10 @@
         check();
       }
     });
+
+    // Already logged in on this device? Go straight to the dashboard.
+    import("../assets/js/auth.js").then((m) => m.redirectIfSignedIn()).catch(() => {});
   </script>
 </body>
-      </html>
-        
+  </html>
+                                                                                                                                                                                    
