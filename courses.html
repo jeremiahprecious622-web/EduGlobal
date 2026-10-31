@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Courses | EduGlobal</title>
+  <meta name="description" content="Explore EduGlobal courses for JSS, SS, JAMB, WAEC, NECO and international learners.">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="icon" type="image/svg+xml" href="assets/img/logo-icon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/base.css">
+  <link rel="stylesheet" href="assets/css/components.css">
+  <link rel="stylesheet" href="assets/css/pages.css">
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <main>
+    <section class="page-hero"><div class="container">
+      <span class="kicker">Courses</span>
+      <h1>Find the right course for you</h1>
+      <p>Choose your curriculum and level when you register. Your dashboard then shows lessons, live classes and practice made for you.</p>
+    </div></section>
+
+    <section class="section"><div class="container">
+      <div class="section-head"><h2>Levels we teach</h2></div>
+      <div class="grid grid-4">
+        <div class="card"><div class="card-icon t-blue"><svg class="icon"><use href="#i-book"/></svg></div><h3>Junior Secondary</h3><p>Strong foundations in the first three years.</p><div class="chips"><span class="chip">JSS 1</span><span class="chip">JSS 2</span><span class="chip">JSS 3</span></div></div>
+        <div class="card"><div class="card-icon t-violet"><svg class="icon"><use href="#i-cap"/></svg></div><h3>Senior Secondary</h3><p>Topic-by-topic lessons for the final years.</p><div class="chips"><span class="chip">SS1</span><span class="chip">SS2</span><span class="chip">SS3</span></div></div>
+        <div class="card"><div class="card-icon t-gold"><svg class="icon"><use href="#i-exam"/></svg></div><h3>Exam preparation</h3><p>Focused revision and timed practice.</p><div class="chips"><span class="chip gold">JAMB</span><span class="chip gold">WAEC</span><span class="chip gold">NECO</span><span class="chip gold">GCE</span></div></div>
+        <div class="card"><div class="card-icon t-green"><svg class="icon"><use href="#i-globe"/></svg></div><h3>International</h3><p>Lower secondary, upper secondary and general revision for learners in other countries.</p></div>
+      </div>
+    </div></section>
+
+    <section class="section section-soft"><div class="container">
+      <div class="section-head"><h2>Subjects</h2><p>More subjects are added as qualified teachers join.</p></div>
+      <div class="pills">
+        <span class="pill">Mathematics</span><span class="pill">English Language</span><span class="pill">General Science</span><span class="pill">Biology</span><span class="pill">Chemistry</span><span class="pill">Physics</span>
+        <span class="pill">Computer Studies</span><span class="pill">Economics</span><span class="pill">Business Studies</span><span class="pill">Geography</span><span class="pill">History</span><span class="pill">Other subjects</span>
+      </div>
+    </div></section>
+
+    <section class="section"><div class="container two-up">
+      <div class="card"><div class="card-icon t-green"><svg class="icon"><use href="#i-video"/></svg></div><h3>Live classes</h3><p id="live-days">Live classes run on set days each week through Google Meet.</p></div>
+      <div class="card"><div class="card-icon t-violet"><svg class="icon"><use href="#i-spark"/></svg></div><h3>More on the way</h3><p>Recorded lessons, study notes, practice exams and an AI study assistant are being added step by step.</p></div>
+    </div></section>
+    <section class="section" style="padding-top:0"><div class="container"><div class="cta">
+      <h2>Ready to start?</h2><p>Create a free student account and pick your subjects.</p>
+      <div class="hero-cta"><a class="btn btn-gold" href="auth/student-register.html">Create account</a></div>
+    </div></div></section>
+  </main>
+  <div id="site-footer"></div>
+  <script type="module" src="assets/js/layout.js"></script>
+  <script type="module">
+    try {
+      const L = await import("./assets/js/live-schedule.js");
+      document.getElementById("live-days").textContent = L.daysText() + " (Nigeria time).";
+    } catch (e) { /* keeps the default sentence */ }
+  </script>
+</body>
+</html>
