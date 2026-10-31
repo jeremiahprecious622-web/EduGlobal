@@ -97,7 +97,10 @@
       }
       showMessage("If an account exists for that email, a reset link has been sent. Check your inbox and spam folder.", "success");
     });
+
+    // Already logged in on this device? Go straight to the dashboard.
+    import("../assets/js/auth.js").then((m) => m.redirectIfSignedIn()).catch(() => {});
   </script>
 </body>
-    </html>
-    
+  </html>
+  
