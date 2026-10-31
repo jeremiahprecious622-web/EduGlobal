@@ -19,7 +19,7 @@
 <main class="app-main">
   <p id="loading">Loading...</p>
   <div id="content" hidden>
-    <div class="hello"><h1>Class schedule</h1><p>Live classes run on Mondays, Thursdays and Fridays between 5:00 PM and 8:00 PM (Nigeria time).</p></div>
+    <div class="hello"><h1>Class schedule</h1><p>Google Meet classes: Monday, Thursday and Friday, 5:00 PM to 8:00 PM. Classroom days (no Meet): Tuesday, Wednesday and Saturday, 5:00 PM to 7:00 PM. Nigeria time.</p></div>
     <div class="panel" style="margin-bottom:1.4rem">
       <h2 style="font-size:1.1rem;margin-top:0">Add a class</h2>
       <div class="dash-form">
@@ -56,7 +56,7 @@ try {
 }
 let toastTimer;
 function toast(text) { const t = $("toast"); t.textContent = text; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 5000); }
-const DAYS = { 1: "Monday", 4: "Thursday", 5: "Friday" };
+const DAYS = { 1: "Monday", 2: "Tuesday", 3: "Wednesday", 4: "Thursday", 5: "Friday", 6: "Saturday" };
 S.mountShell({ items: [
   { path: "admin/dashboard", label: "Dashboard", icon: "home" },
   { path: "admin/manage-teachers", label: "Teachers", icon: "users" },
@@ -94,13 +94,13 @@ async function load() {
 function renderSchedule() {
   const box = $("schedule"); box.innerHTML = "";
   if (!classes.length) { box.append(el("p", "today-note", "No classes yet. Add the first one above.")); return; }
-  [1, 4, 5].forEach((day) => {
+  [1, 2, 3, 4, 5, 6].forEach((day) => {
     const list = classes.filter((c) => c.day === day).sort((a, b) => a.start.localeCompare(b.start));
     if (!list.length) return;
     box.append(el("p", "day-label", DAYS[day]));
     list.forEach((c) => {
       const card = el("div", "item-card"); const head = el("div", "item-head");
-      const info = el("div"); info.append(el("h3", "", c.subject + " - " + c.title), el("p", "", L.classTimeText(c) + " - " + c.teacherName));
+      const info = el("div"); info.append(el("h3", "", c.subject + " - " + c.title), el("p", "", L.classTimeText(c) + " - " + c.teacherName + (c.mode === "room" ? " - Classroom day" : " - Google Meet")));
       head.append(info, el("span", "status " + (c.active ? "green" : "grey"), c.active ? "Active" : "Paused"));
       const actions = el("div", "row-actions");
       const pause = el("button", "btn btn-ghost btn-sm", c.active ? "Pause" : "Resume"); pause.type = "button";
@@ -125,10 +125,12 @@ $("f-add").addEventListener("click", async () => {
   if (!subject || !teacher) return toast("Please choose a subject and a teacher.");
   if (!/^1[7-9]:[0-5][0-9]$/.test(start) || !(/^1[7-9]:[0-5][0-9]$/.test(end) || end === "20:00")) return toast("Class times must be between 5:00 PM and 8:00 PM.");
   if (start >= end) return toast("The end time must be after the start time.");
+  const mode = [1, 4, 5].includes(day) ? "live" : "room";
+  if (mode === "room" && end > "19:00") return toast("Classroom days (Tuesday, Wednesday, Saturday) run from 5:00 PM to 7:00 PM.");
   const clash = classes.find((c) => c.active && c.teacherUid === teacherUid && c.day === day && start < c.end && end > c.start);
   if (clash) return toast(teacher.fullName + " already has a class at that time.");
   try {
-    await FS.addDoc(FS.collection(F.db, "classes"), { subject, title, teacherUid, teacherName: teacher.fullName, day, start, end, active: true, createdAt: FS.serverTimestamp() });
+    await FS.addDoc(FS.collection(F.db, "classes"), { subject, title, teacherUid, teacherName: teacher.fullName, day, start, end, active: true, mode, createdAt: FS.serverTimestamp() });
     toast("Class added."); $("f-title").value = ""; await load();
   } catch (e) { toast("Could not add the class. Check that the new rules are published."); }
 });
@@ -142,5 +144,5 @@ A.requireRole(["superadmin"], async () => {
 
 </script>
 </body>
-          </html>
-                                                            
+               </html>
+                                                  
