@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="robots" content="noindex">
+  <title>Admin dashboard | EduGlobal</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/img/logo-icon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/dashboard.css">
+</head>
+<body>
+<div class="app">
+<main class="app-main">
+  <p id="loading">Loading...</p>
+  <div id="content" hidden>
+    <div class="hello"><h1>Administrator dashboard</h1><p id="who"></p></div>
+    <div class="stat-grid">
+      <div class="stat"><span>Students</span><strong id="n-students">0</strong></div>
+      <div class="stat"><span>Teachers</span><strong id="n-teachers">0</strong></div>
+      <div class="stat"><span>Weekly classes</span><strong id="n-classes">0</strong></div>
+      <div class="stat"><span>Live now</span><strong id="n-live">0</strong></div>
+    </div>
+    <h2 class="section-label">Today's classes</h2>
+    <div class="today-list" id="today"></div>
+    <h2 class="section-label">Quick actions</h2>
+    <div class="btn-row">
+      <a class="btn btn-primary btn-sm" href="manage-teachers.html">Assign teachers to subjects</a>
+      <a class="btn btn-ghost btn-sm" href="live-classes.html">Manage class schedule</a>
+      <a class="btn btn-ghost btn-sm" href="../teacher/dashboard.html">My teaching</a>
+    </div>
+    <h2 class="section-label">Teacher recruitment</h2>
+    <p class="today-note">Teacher applications, document review and the 10-teacher limit come in the next update.</p>
+  </div>
+</main>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+<script type="module">
+const $ = (id) => document.getElementById(id);
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
+
+let A, F, FS, D, L, S;
+try {
+  A = await import("../assets/js/auth.js");
+  F = await import("../assets/js/firebase-config.js");
+  FS = await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js");
+  D = await import("../assets/js/curricula-data.js");
+  L = await import("../assets/js/live-schedule.js");
+  S = await import("../assets/js/shell.js");
+} catch (e) {
+  $("loading").textContent = "Could not load a page file. Check that auth.js, firebase-config.js, curricula-data.js, live-schedule.js and shell.js are all inside assets/js.";
+  throw e;
+}
+let toastTimer;
+function toast(text) { const t = $("toast"); t.textContent = text; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 5000); }
+const DAYS = { 1: "Monday", 4: "Thursday", 5: "Friday" };
+S.mountShell({ items: [
+  { path: "admin/dashboard", label: "Dashboard", icon: "home" },
+  { path: "admin/manage-teachers", label: "Teachers", icon: "users" },
+  { path: "admin/live-classes", label: "Classes", icon: "calendar" },
+  { path: "teacher/dashboard", label: "Teaching", icon: "video" }
+], onLogout: async () => { await A.logout(); window.location.href = "../auth/teacher-login.html"; } });
+
+A.requireRole(["superadmin"], async (user, profile) => {
+  $("who").textContent = "Signed in as " + profile.fullName;
+  const count = async (q) => { try { return (await FS.getCountFromServer(q)).data().count; } catch (e) { return "-"; } };
+  $("n-students").textContent = await count(FS.query(FS.collection(F.db, "users"), FS.where("role", "==", "student")));
+  $("n-teachers").textContent = await count(FS.collection(F.db, "teachers"));
+  $("n-classes").textContent = await count(FS.collection(F.db, "classes"));
+
+  let classes = [];
+  try { classes = (await FS.getDocs(FS.collection(F.db, "classes"))).docs.map((d) => ({ id: d.id, ...d.data() })); } catch (e) { toast("Could not load classes."); }
+  const today = classes.filter((c) => c.active && c.day === L.todayIndex()).sort((a, b) => a.start.localeCompare(b.start));
+  const list = $("today"); let live = 0;
+  if (!today.length) list.append(el("p", "today-note", "No classes are scheduled for today."));
+  for (const c of today) {
+    let session = null;
+    try { const s = await FS.getDoc(FS.doc(F.db, "liveSessions", c.id)); session = s.exists() ? s.data() : null; } catch (e) {}
+    const isLive = L.isSessionLive(session); if (isLive) live++;
+    const row = el("div", "today-row" + (isLive ? " live" : ""));
+    const left = el("div"); left.append(el("strong", "", c.subject + " - " + c.title), el("small", "", L.classTimeText(c) + " - " + c.teacherName));
+    row.append(left, el("span", "status " + (isLive ? "green" : "grey"), isLive ? "Live now" : "Not started"));
+    list.append(row);
+  }
+  $("n-live").textContent = live;
+  $("loading").hidden = true; $("content").hidden = false;
+});
+
+</script>
+</body>
+                          </html>
+  
