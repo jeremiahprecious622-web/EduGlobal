@@ -14,12 +14,23 @@ service cloud.firestore {
     function signedIn() { return request.auth != null; }
     function isVerified() { return signedIn() && request.auth.token.email_verified == true; }
     function me() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
-    function isSuperAdmin() { return isVerified() && me().role == 'superadmin'; }
+    // THE ONLY ADMINISTRATOR. Paste your own User UID from Firebase, Authentication, Users.
+    // Even if another account is ever given the superadmin role, only this one works.
+    function founderUid() { return '7WfOT5N4CUfnb58gp8o9UGDjgdX2'; }
+    function isSuperAdmin() { return isVerified() && request.auth.uid == founderUid() && me().role == 'superadmin'; }
     function isStudent() { return isVerified() && me().role == 'student' && me().status == 'active'; }
     function canTeach() { return isVerified() && me().role in ['teacher', 'superadmin'] && me().status == 'active'; }
 
     // Monday, Thursday or Friday (counted from the day number since 1970, when day 0 was a Thursday)
     function dayOk() { return (math.floor(request.time.toMillis() / 86400000) + 4) % 7 in [1, 4, 5]; }
+    // Classroom access: students of the subject, the assigned teacher, or the administrator
+    function inRoom(subject) { return isStudent() && me().subjects.hasAny([subject]); }
+    function teachesSubject(subject) {
+      return canTeach() && (isSuperAdmin()
+        || (get(/databases/$(database)/documents/teachers/$(request.auth.uid)).data.status == 'active'
+            && get(/databases/$(database)/documents/teachers/$(request.auth.uid)).data.subjects.hasAny([subject])));
+    }
+
     function inLiveWindow() { return dayOk() && request.time.hours() >= 16 && request.time.hours() < 19; }
 
     // ---------- users ----------
@@ -77,13 +88,18 @@ service cloud.firestore {
 
       allow create: if isSuperAdmin()
         && request.resource.data.keys().hasOnly(
-             ['subject','title','teacherUid','teacherName','day','start','end','active','createdAt'])
+             ['subject','title','teacherUid','teacherName','day','start','end','active','mode','createdAt'])
         && request.resource.data.subject is string
         && request.resource.data.subject.size() > 0 && request.resource.data.subject.size() <= 60
         && request.resource.data.title is string && request.resource.data.title.size() <= 80
         && request.resource.data.teacherUid is string
         && request.resource.data.teacherName is string && request.resource.data.teacherName.size() <= 80
-        && request.resource.data.day in [1, 4, 5]
+        && request.resource.data.day in [1, 2, 3, 4, 5, 6]
+        && request.resource.data.mode in ['live', 'room']
+        // live = Google Meet days (Mon, Thu, Fri). room = classroom days (Tue, Wed, Sat) ending by 7:00 PM
+        && ((request.resource.data.mode == 'live' && request.resource.data.day in [1, 4, 5])
+            || (request.resource.data.mode == 'room' && request.resource.data.day in [2, 3, 6]
+                && request.resource.data.end <= '19:00'))
         && request.resource.data.start.matches('^1[7-9]:[0-5][0-9]$')
         && (request.resource.data.end.matches('^1[7-9]:[0-5][0-9]$') || request.resource.data.end == '20:00')
         && request.resource.data.start < request.resource.data.end
@@ -118,6 +134,7 @@ service cloud.firestore {
       function startOk(id, d) {
         return canTeach()
           && classOf(id).teacherUid == request.auth.uid
+          && get(/databases/$(database)/documents/teachers/$(request.auth.uid)).data.status == 'active'
           && inLiveWindow()
           && d.keys().hasOnly(['classId','subject','title','teacherUid','teacherName','meetLink','status','startedAt'])
           && d.classId == id
@@ -140,6 +157,36 @@ service cloud.firestore {
           && request.resource.data.endedAt == request.time
           && request.resource.data.meetLink == '';
       }
+    }
+
+    // ---------- classrooms: lessons and chat, one room per subject ----------
+    match /rooms/{subject}/lessons/{id} {
+      allow read: if isSuperAdmin() || inRoom(subject) || teachesSubject(subject);
+      allow create: if teachesSubject(subject)
+        && request.resource.data.keys().hasOnly(['title','body','videoUrl','teacherUid','teacherName','createdAt'])
+        && request.resource.data.title is string && request.resource.data.title.size() >= 3 && request.resource.data.title.size() <= 100
+        && request.resource.data.body is string && request.resource.data.body.size() >= 10 && request.resource.data.body.size() <= 4000
+        && request.resource.data.videoUrl is string
+        && (request.resource.data.videoUrl == ''
+            || request.resource.data.videoUrl.matches('^https://(www[.])?(youtube[.]com/watch[?]v=|youtu[.]be/)[A-Za-z0-9_-]{11}([&?].*)?$'))
+        && request.resource.data.teacherUid == request.auth.uid
+        && request.resource.data.teacherName == me().fullName
+        && request.resource.data.createdAt == request.time;
+      allow update: if false;
+      allow delete: if teachesSubject(subject);
+    }
+
+    match /rooms/{subject}/messages/{id} {
+      allow read: if isSuperAdmin() || inRoom(subject) || teachesSubject(subject);
+      allow create: if (inRoom(subject) || teachesSubject(subject))
+        && request.resource.data.keys().hasOnly(['text','authorUid','authorName','role','createdAt'])
+        && request.resource.data.text is string && request.resource.data.text.size() >= 1 && request.resource.data.text.size() <= 500
+        && request.resource.data.authorUid == request.auth.uid
+        && request.resource.data.authorName == me().fullName
+        && request.resource.data.role == me().role
+        && request.resource.data.createdAt == request.time;
+      allow update: if false;
+      allow delete: if teachesSubject(subject) || (isVerified() && resource.data.authorUid == request.auth.uid);
     }
 
     // ---------- settings ----------
