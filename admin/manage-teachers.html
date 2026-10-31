@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="robots" content="noindex">
+  <title>Manage teachers | EduGlobal</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/img/logo-icon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/dashboard.css">
+</head>
+<body>
+<div class="app">
+<main class="app-main">
+  <p id="loading">Loading...</p>
+  <div id="content" hidden>
+    <div class="hello"><h1>Teachers and subjects</h1><p>Choose which subjects each teacher can be scheduled to teach.</p></div>
+    <div id="founder-box"></div>
+    <div id="teacher-list"></div>
+  </div>
+</main>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+<script type="module">
+const $ = (id) => document.getElementById(id);
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
+
+let A, F, FS, D, L, S;
+try {
+  A = await import("../assets/js/auth.js");
+  F = await import("../assets/js/firebase-config.js");
+  FS = await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js");
+  D = await import("../assets/js/curricula-data.js");
+  L = await import("../assets/js/live-schedule.js");
+  S = await import("../assets/js/shell.js");
+} catch (e) {
+  $("loading").textContent = "Could not load a page file. Check that auth.js, firebase-config.js, curricula-data.js, live-schedule.js and shell.js are all inside assets/js.";
+  throw e;
+}
+let toastTimer;
+function toast(text) { const t = $("toast"); t.textContent = text; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 5000); }
+const DAYS = { 1: "Monday", 4: "Thursday", 5: "Friday" };
+S.mountShell({ items: [
+  { path: "admin/dashboard", label: "Dashboard", icon: "home" },
+  { path: "admin/manage-teachers", label: "Teachers", icon: "users" },
+  { path: "admin/live-classes", label: "Classes", icon: "calendar" },
+  { path: "teacher/dashboard", label: "Teaching", icon: "video" }
+], onLogout: async () => { await A.logout(); window.location.href = "../auth/teacher-login.html"; } });
+
+let user, profile, teachers = [];
+
+async function load() {
+  const snap = await FS.getDocs(FS.collection(F.db, "teachers"));
+  teachers = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  render();
+}
+
+function render() {
+  const box = $("founder-box"); box.innerHTML = "";
+  if (!teachers.some((t) => t.id === user.uid)) {
+    const card = el("div", "item-card");
+    card.append(el("h3", "", "You are not set up as a teacher yet"),
+      el("p", "", "Add yourself so you can be assigned to subjects and start live lessons."));
+    const btn = el("button", "btn btn-primary btn-sm", "Add me as a teacher"); btn.type = "button"; btn.style.marginTop = "0.8rem";
+    btn.addEventListener("click", async () => {
+      try {
+        await FS.setDoc(FS.doc(F.db, "teachers", user.uid), { fullName: profile.fullName, email: profile.email, subjects: [], status: "active", isFounder: true, createdAt: FS.serverTimestamp() });
+        toast("You are now a teacher. Choose your subjects below."); await load();
+      } catch (e) { toast("Could not add you. Check that the new rules are published."); }
+    });
+    card.append(btn); box.append(card);
+  }
+
+  const list = $("teacher-list"); list.innerHTML = "";
+  if (!teachers.length) list.append(el("p", "today-note", "No teachers yet."));
+  teachers.forEach((t) => {
+    const card = el("div", "item-card");
+    const head = el("div", "item-head");
+    const info = el("div"); info.append(el("h3", "", t.fullName + (t.isFounder ? " (founder)" : "")), el("p", "", t.email));
+    head.append(info, el("span", "status " + (t.status === "active" ? "green" : "red"), t.status === "active" ? "Active" : "Suspended"));
+    card.append(head, el("p", "", "Subjects this teacher can teach:"));
+    const grid = el("div", "cbx-grid");
+    D.SUBJECTS.forEach((name) => {
+      const label = el("label", "cbx"); const box = document.createElement("input");
+      box.type = "checkbox"; box.value = name; box.checked = (t.subjects || []).includes(name);
+      label.append(box, el("span", "", name)); grid.append(label);
+    });
+    card.append(grid);
+    const actions = el("div", "row-actions");
+    const save = el("button", "btn btn-primary btn-sm", "Save subjects"); save.type = "button";
+    save.addEventListener("click", async () => {
+      const subjects = [...grid.querySelectorAll("input:checked")].map((b) => b.value);
+      try { await FS.updateDoc(FS.doc(F.db, "teachers", t.id), { subjects }); toast("Subjects saved for " + t.fullName + "."); await load(); }
+      catch (e) { toast("Could not save. Please try again."); }
+    });
+    const toggle = el("button", "btn btn-ghost btn-sm", t.status === "active" ? "Suspend" : "Reactivate"); toggle.type = "button";
+    toggle.addEventListener("click", async () => {
+      try { await FS.updateDoc(FS.doc(F.db, "teachers", t.id), { status: t.status === "active" ? "suspended" : "active" }); await load(); }
+      catch (e) { toast("Could not update the teacher."); }
+    });
+    actions.append(save, toggle);
+    if (!t.isFounder) {
+      const del = el("button", "btn btn-danger btn-sm", "Remove"); del.type = "button";
+      del.addEventListener("click", async () => {
+        if (!confirm("Remove " + t.fullName + " from the teaching team? Their classes stay in the timetable until you delete them.")) return;
+        try { await FS.deleteDoc(FS.doc(F.db, "teachers", t.id)); await load(); } catch (e) { toast("Could not remove the teacher."); }
+      });
+      actions.append(del);
+    }
+    card.append(actions); list.append(card);
+  });
+}
+
+A.requireRole(["superadmin"], async (u, p) => {
+  user = u; profile = p;
+  try { await load(); } catch (e) { toast("Could not load teachers. Check that the new rules are published."); }
+  $("loading").hidden = true; $("content").hidden = false;
+});
+
+</script>
+</body>
+  </html>
+  
