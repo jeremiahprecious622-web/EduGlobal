@@ -44,13 +44,11 @@
   </main>
 
   <script type="module">
-    import { loginStudent, resetPassword, friendlyError } from "../assets/js/auth.js";
-    import { isConfigured } from "../assets/js/firebase-config.js";
-
     const $ = (id) => document.getElementById(id);
     const messageBox = $("message"), submitBtn = $("submit");
     function showMessage(text, type) { messageBox.textContent = text; messageBox.className = "message show " + type; }
 
+    // Show / hide password (works without Firebase)
     $("toggle").addEventListener("click", () => {
       const input = $("password"); const show = input.type === "password";
       input.type = show ? "text" : "password";
@@ -58,34 +56,48 @@
       $("toggle").setAttribute("aria-label", show ? "Hide password" : "Show password");
     });
 
+    // Loads the Firebase files only when needed, and explains clearly if something is wrong
+    async function loadApi() {
+      try {
+        const a = await import("../assets/js/auth.js");
+        const c = await import("../assets/js/firebase-config.js");
+        return { loginStudent: a.loginStudent, resetPassword: a.resetPassword, friendlyError: a.friendlyError, isConfigured: c.isConfigured };
+      } catch (e) {
+        showMessage("Could not load the Firebase files. Check that auth.js and firebase-config.js are inside assets/js, and that firebase-config.js has no typing mistakes.", "error");
+        return null;
+      }
+    }
+
     $("login-form").addEventListener("submit", async (event) => {
       event.preventDefault();
       messageBox.className = "message";
-      if (!isConfigured) return showMessage("Firebase is not set up yet. Paste your details into assets/js/firebase-config.js.", "error");
       const email = $("email").value.trim().toLowerCase(), password = $("password").value;
       if (!email || !password) return showMessage("Please enter your email and password.", "error");
+      const api = await loadApi(); if (!api) return;
+      if (!api.isConfigured) return showMessage("Firebase is not set up yet. Paste your details into assets/js/firebase-config.js.", "error");
       submitBtn.disabled = true; submitBtn.textContent = "Logging in...";
       try {
-        await loginStudent(email, password);
-        window.location.href = "../student/dashboard.html";
+        const result = await api.loginStudent(email, password);
+        window.location.href = result.emailVerified ? "../student/dashboard.html" : "verify-email.html";
       } catch (error) {
-        showMessage(friendlyError(error), "error");
+        showMessage(api.friendlyError(error), "error");
         submitBtn.disabled = false; submitBtn.textContent = "Log in";
       }
     });
 
     $("forgot").addEventListener("click", async () => {
       messageBox.className = "message";
-      if (!isConfigured) return showMessage("Firebase is not set up yet.", "error");
       const email = $("email").value.trim().toLowerCase();
       if (!email) return showMessage("Type your email above first, then tap Forgot password.", "error");
-      try { await resetPassword(email); }
+      const api = await loadApi(); if (!api) return;
+      if (!api.isConfigured) return showMessage("Firebase is not set up yet.", "error");
+      try { await api.resetPassword(email); }
       catch (error) {
-        if (error.code === "auth/too-many-requests" || error.code === "auth/network-request-failed") return showMessage(friendlyError(error), "error");
+        if (error.code === "auth/too-many-requests" || error.code === "auth/network-request-failed") return showMessage(api.friendlyError(error), "error");
       }
       showMessage("If an account exists for that email, a reset link has been sent. Check your inbox and spam folder.", "success");
     });
   </script>
 </body>
-                                                                     </html>
-              
+                                                             </html>
+                                                                     
