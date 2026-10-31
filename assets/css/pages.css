@@ -1,0 +1,23 @@
+/* ==========================================================
+   EduGlobal - pages.css
+   Extra styles for About, Courses, Teachers, Contact, Apply.
+   ========================================================== */
+.page-hero { padding: clamp(2.5rem, 6vw, 4.2rem) 0 clamp(2rem, 5vw, 3rem); border-bottom: 1px solid var(--line);
+  background: radial-gradient(55% 80% at 90% 0%, #cfe4ff, transparent 70%), radial-gradient(35% 60% at 0% 100%, #fff1c9, transparent 70%), linear-gradient(180deg, #f3f8ff, #fff); }
+.page-hero h1 { font-size: clamp(2rem, 5.5vw, 3.1rem); margin-bottom: 0.5rem; }
+.page-hero p { max-width: 40rem; font-size: 1.05rem; margin: 0; }
+.pills { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.pill { padding: 0.65rem 1.05rem; border-radius: 12px; background: #fff; border: 1px solid var(--line); font-weight: 700; font-size: 0.92rem; box-shadow: var(--shadow); }
+.list-check li { position: relative; padding-left: 1.8rem; margin-bottom: 0.65rem; color: var(--muted); }
+.list-check li::before { content: ""; position: absolute; left: 0.1rem; top: 0.42rem; width: 0.85rem; height: 0.45rem; border-left: 3px solid var(--green); border-bottom: 3px solid var(--green); transform: rotate(-45deg); }
+.notice { display: flex; gap: 0.9rem; align-items: flex-start; padding: 1rem 1.2rem; border-radius: var(--radius); background: #fff8e1; border: 1px solid #f6df9b; color: #6f5400; font-size: 0.93rem; }
+.notice .icon { flex: none; margin-top: 2px; }
+.notice p { margin: 0; color: inherit; }
+.contact-list { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.contact-card { display: flex; gap: 1rem; align-items: center; }
+.contact-card .card-icon { margin: 0; flex: none; }
+.contact-card strong { display: block; }
+.contact-card span { color: var(--muted); font-size: 0.92rem; overflow-wrap: anywhere; }
+.two-up { display: grid; gap: 1.1rem; }
+@media (min-width: 860px) { .two-up { grid-template-columns: 1fr 1fr; } }
+                
