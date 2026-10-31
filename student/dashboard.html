@@ -2,78 +2,255 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#ffffff">
+  <title>My dashboard | EduGlobal</title>
   <link rel="icon" type="image/svg+xml" href="../assets/img/logo-icon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../assets/css/base.css">
   <link rel="stylesheet" href="../assets/css/components.css">
-  <link rel="stylesheet" href="../assets/css/forms.css">
-  <title>My dashboard | EduGlobal</title>
+  <link rel="stylesheet" href="../assets/css/dashboard.css">
 </head>
 <body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v8.5a1.5 1.5 0 0 1-1.5 1.5H15v-6H9v6H5.5A1.5 1.5 0 0 1 4 19.5z"/></symbol>
+    <symbol id="i-video" viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M12 6c-2-1.5-5-2-8-2v14c3 0 6 .5 8 2 2-1.5 5-2 8-2V4c-3 0-6 .5-8 2z"/><path d="M12 6v14"/></symbol>
+    <symbol id="i-exam" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c.6-4 3.7-6.5 8-6.5s7.4 2.5 8 6.5"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 13h6M9 17h4"/></symbol>
+  </svg>
+
   <div class="app">
     <header class="app-top">
-      <a href="../index.html"><img src="../assets/img/logo.svg" alt="EduGlobal" width="146" height="40"></a>
-      <button class="btn btn-ghost btn-sm js-logout" type="button">Log out</button>
+      <a href="../index.html" aria-label="EduGlobal home"><img src="../assets/img/logo.svg" alt="EduGlobal" width="146" height="40"></a>
+      <button class="avatar js-go js-avatar" type="button" data-go="profile" aria-label="My profile">?</button>
     </header>
 
     <aside class="app-side">
       <a class="logo" href="../index.html"><img src="../assets/img/logo.svg" alt="EduGlobal" width="146" height="40"></a>
       <nav class="side-nav" aria-label="Dashboard">
-        <a class="active" href="dashboard.html">Dashboard</a>
-        <span class="later">My Courses <em>Soon</em></span>
-        <span class="later">Live Classes <em>Soon</em></span>
-        <span class="later">CBT Practice <em>Soon</em></span>
-        <span class="later">AI Study Assistant <em>Soon</em></span>
-        <span class="later">My Progress <em>Soon</em></span>
+        <button class="js-go" data-go="home"><svg class="icon"><use href="#i-home"/></svg>Home</button>
+        <button class="js-go" data-go="live"><svg class="icon"><use href="#i-video"/></svg>Live lessons</button>
+        <button class="js-go" data-go="courses"><svg class="icon"><use href="#i-book"/></svg>My courses</button>
+        <button class="js-go" data-go="practice"><svg class="icon"><use href="#i-exam"/></svg>Practice</button>
+        <button class="js-go" data-go="profile"><svg class="icon"><use href="#i-user"/></svg>My profile</button>
       </nav>
       <div class="side-bottom"><button class="btn btn-ghost btn-sm btn-block js-logout" type="button">Log out</button></div>
     </aside>
 
     <main class="app-main">
-      <div class="panel">
-        <p id="loading">Loading your dashboard...</p>
-        <div id="content" hidden>
-          <h1 id="welcome"></h1>
-          <p>Your account is working. The full dashboard (courses, live classes, progress) is built in Stage 5.</p>
-          <dl class="profile-list">
-            <div><dt>Email</dt><dd id="p-email"></dd></div>
-            <div><dt>Country</dt><dd id="p-country"></dd></div>
-            <div><dt>Curriculum</dt><dd id="p-curriculum"></dd></div>
-            <div><dt>Level</dt><dd id="p-level"></dd></div>
-            <div><dt>Subjects</dt><dd id="p-subjects"></dd></div>
-          </dl>
-        </div>
+      <p id="loading">Loading your dashboard...</p>
+
+      <div id="content" hidden>
+        <!-- HOME -->
+        <section class="view" data-view="home">
+          <div class="hello"><h1 id="greeting"></h1><p>Ready to learn today?</p></div>
+
+          <div class="live-hero">
+            <span class="badge js-live-badge">Next class</span>
+            <h2 id="live-title">EduGlobal Live Class</h2>
+            <p class="when js-live-when"></p>
+            <p class="days js-days"></p>
+            <button class="btn btn-gold btn-block js-join" type="button">Join online lesson</button>
+          </div>
+
+          <div class="tiles">
+            <button class="tile js-go" data-go="courses"><div class="card-icon t-blue"><svg class="icon"><use href="#i-book"/></svg></div><strong>My courses</strong></button>
+            <button class="tile js-go" data-go="practice"><div class="card-icon t-gold"><svg class="icon"><use href="#i-exam"/></svg></div><strong>Practice exams</strong></button>
+            <button class="tile" disabled><em>Soon</em><div class="card-icon t-violet"><svg class="icon"><use href="#i-spark"/></svg></div><strong>AI assistant</strong></button>
+            <button class="tile" disabled><em>Soon</em><div class="card-icon t-green"><svg class="icon"><use href="#i-file"/></svg></div><strong>Study materials</strong></button>
+          </div>
+
+          <h2 class="section-label">My subjects</h2>
+          <div class="chips" id="subject-chips"></div>
+        </section>
+
+        <!-- LIVE -->
+        <section class="view" data-view="live">
+          <h1 class="view-title">Live lessons</h1>
+          <div class="live-hero">
+            <span class="badge js-live-badge">Next class</span>
+            <h2>EduGlobal Live Class</h2>
+            <p class="when js-live-when"></p>
+            <p class="days js-days"></p>
+            <button class="btn btn-gold btn-block js-join" type="button">Join online lesson</button>
+          </div>
+          <div class="panel">
+            <h2 style="font-size:1.1rem;margin:0">Upcoming classes</h2>
+            <div class="class-list" id="class-list"></div>
+            <p style="margin:1rem 0 0;font-size:0.88rem">The Join button unlocks automatically when class starts. Times are Nigeria time (WAT).</p>
+          </div>
+        </section>
+
+        <!-- COURSES -->
+        <section class="view" data-view="courses">
+          <h1 class="view-title">My courses</h1>
+          <div class="empty">
+            <div class="card-icon t-blue"><svg class="icon"><use href="#i-book"/></svg></div>
+            <h3>Courses are on the way</h3>
+            <p>Your lessons, recorded videos and notes will appear here once teachers publish them.</p>
+          </div>
+        </section>
+
+        <!-- PRACTICE -->
+        <section class="view" data-view="practice">
+          <h1 class="view-title">Practice exams</h1>
+          <div class="empty">
+            <div class="card-icon t-gold"><svg class="icon"><use href="#i-exam"/></svg></div>
+            <h3>Practice tests are coming</h3>
+            <p>Timed JAMB, WAEC and NECO style practice will open here, with instant marking and explanations.</p>
+          </div>
+        </section>
+
+        <!-- PROFILE -->
+        <section class="view" data-view="profile">
+          <h1 class="view-title">My profile</h1>
+          <div class="panel">
+            <div class="profile-head">
+              <div class="avatar js-avatar-big">?</div>
+              <div><h2 id="p-name"></h2><p id="p-email"></p></div>
+            </div>
+            <dl class="profile-list">
+              <div><dt>Country</dt><dd id="p-country"></dd></div>
+              <div><dt>Curriculum</dt><dd id="p-curriculum"></dd></div>
+              <div><dt>Level</dt><dd id="p-level"></dd></div>
+              <div><dt>Subjects</dt><dd id="p-subjects"></dd></div>
+            </dl>
+            <div class="btn-row">
+              <button class="btn btn-ghost btn-sm" id="reset-pw" type="button">Send password reset email</button>
+              <button class="btn btn-danger btn-sm js-logout" type="button">Log out</button>
+            </div>
+          </div>
+        </section>
       </div>
     </main>
+
+    <nav class="bottom-nav" aria-label="Dashboard">
+      <button class="js-go" data-go="home"><svg class="icon"><use href="#i-home"/></svg>Home</button>
+      <button class="js-go" data-go="live"><svg class="icon"><use href="#i-video"/></svg>Live<span class="live-dot js-live-dot" hidden></span></button>
+      <button class="js-go" data-go="courses"><svg class="icon"><use href="#i-book"/></svg>Courses</button>
+      <button class="js-go" data-go="practice"><svg class="icon"><use href="#i-exam"/></svg>Practice</button>
+      <button class="js-go" data-go="profile"><svg class="icon"><use href="#i-user"/></svg>Profile</button>
+    </nav>
   </div>
+  <div class="toast" id="toast" role="status" hidden></div>
 
   <script type="module">
-    import { requireStudent, logout } from "../assets/js/auth.js";
-    import { CURRICULA } from "../assets/js/curricula-data.js";
     const $ = (id) => document.getElementById(id);
+    const all = (sel) => document.querySelectorAll(sel);
 
-    requireStudent((user, profile) => {
-      const curriculum = CURRICULA[profile.curriculum];
+    // Load the page files safely so a missing file shows a clear message
+    let A, F, FS, D, L;
+    try {
+      A = await import("../assets/js/auth.js");
+      F = await import("../assets/js/firebase-config.js");
+      FS = await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js");
+      D = await import("../assets/js/curricula-data.js");
+      L = await import("../assets/js/live-schedule.js");
+    } catch (e) {
+      $("loading").textContent = "Could not load a page file. Check that auth.js, firebase-config.js, curricula-data.js and live-schedule.js are all inside assets/js.";
+      throw e;
+    }
+
+    let toastTimer;
+    function toast(text) {
+      const t = $("toast"); t.textContent = text; t.hidden = false;
+      clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 4500);
+    }
+
+    // ----- Switching between Home / Live / Courses / Practice / Profile -----
+    const VIEWS = ["home", "live", "courses", "practice", "profile"];
+    function show(name) {
+      if (!VIEWS.includes(name)) name = "home";
+      all(".view").forEach((v) => v.classList.toggle("active", v.dataset.view === name));
+      all(".js-go").forEach((b) => {
+        if (b.classList.contains("tile") || b.classList.contains("avatar")) return;
+        if (b.dataset.go === name) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
+      });
+      history.replaceState(null, "", "#" + name);
+      window.scrollTo(0, 0);
+    }
+    all(".js-go").forEach((b) => b.addEventListener("click", () => show(b.dataset.go)));
+    window.addEventListener("hashchange", () => show(location.hash.slice(1)));
+
+    // ----- Live class card -----
+    function renderLive() {
+      const st = L.liveStatus();
+      all(".js-live-badge").forEach((b) => {
+        b.className = "badge js-live-badge" + (st.live ? " live" : "");
+        b.textContent = st.live ? "Live now" : "Next class";
+        if (st.live) b.prepend(Object.assign(document.createElement("span"), { className: "dot" }));
+      });
+      all(".js-live-when").forEach((e) => {
+        e.textContent = st.live ? "Class is on until " + L.formatTime(L.LIVE.end) : st.nextLabel + ", " + L.formatTime(L.LIVE.start);
+      });
+      all(".js-days").forEach((e) => { e.textContent = L.daysText(); });
+      all(".js-join").forEach((b) => { b.disabled = !st.live; });
+      all(".js-live-dot").forEach((d) => { d.hidden = !st.live; });
+
+      const list = $("class-list"); list.innerHTML = "";
+      L.upcomingClasses(4).forEach((c) => {
+        const item = document.createElement("div"); item.className = "class-item" + (c.live ? " live" : "");
+        const left = document.createElement("div");
+        const strong = document.createElement("strong"); strong.textContent = c.when + (c.live ? " (live now)" : "");
+        const date = document.createElement("span"); date.textContent = c.date;
+        left.append(strong, date);
+        const time = document.createElement("span"); time.textContent = L.formatTime(L.LIVE.start) + " to " + L.formatTime(L.LIVE.end);
+        item.append(left, time); list.append(item);
+      });
+    }
+
+    // The Google Meet link is stored in Firestore (settings/liveClass), not in public code
+    async function joinClass() {
+      if (!L.liveStatus().live) return toast("Online lessons run on Mondays, Thursdays and Fridays.");
+      try {
+        const snap = await FS.getDoc(FS.doc(F.db, "settings", "liveClass"));
+        const link = snap.exists() ? snap.data().meetLink : "";
+        if (typeof link === "string" && link.startsWith("https://meet.google.com/")) window.location.href = link;
+        else toast("The class link has not been added yet. Please check again in a few minutes.");
+      } catch (e) {
+        toast("Could not open the class. Please try again.");
+      }
+    }
+    all(".js-join").forEach((b) => b.addEventListener("click", joinClass));
+
+    // ----- Fill the page once we know the student is logged in and verified -----
+    A.requireStudent((user, profile) => {
+      const first = profile.fullName.split(" ")[0];
+      const hour = new Date().getHours();
+      $("greeting").textContent = (hour < 12 ? "Good morning, " : hour < 17 ? "Good afternoon, " : "Good evening, ") + first;
+      const initial = profile.fullName.trim().charAt(0).toUpperCase();
+      all(".js-avatar, .js-avatar-big").forEach((e) => { e.textContent = initial; });
+
+      const curriculum = D.CURRICULA[profile.curriculum];
       const level = curriculum ? curriculum.levels.find((l) => l.id === profile.level) : null;
-      $("welcome").textContent = "Welcome, " + profile.fullName.split(" ")[0];
+      $("p-name").textContent = profile.fullName;
       $("p-email").textContent = profile.email;
       $("p-country").textContent = profile.country;
       $("p-curriculum").textContent = curriculum ? curriculum.name : profile.curriculum;
       $("p-level").textContent = level ? level.label : profile.level;
       $("p-subjects").textContent = profile.subjects.join(", ");
-      $("loading").hidden = true;
-      $("content").hidden = false;
+      profile.subjects.forEach((s) => { const c = document.createElement("span"); c.className = "chip"; c.textContent = s; $("subject-chips").append(c); });
+
+      $("reset-pw").addEventListener("click", async () => {
+        try { await A.resetPassword(user.email); toast("Password reset email sent. Check your inbox."); }
+        catch (e) { toast(A.friendlyError(e)); }
+      });
+
+      renderLive(); setInterval(renderLive, 30000);
+      $("loading").hidden = true; $("content").hidden = false;
+      show(location.hash.slice(1) || "home");
     });
 
-    document.querySelectorAll(".js-logout").forEach((btn) => btn.addEventListener("click", async () => {
-      await logout();
+    all(".js-logout").forEach((b) => b.addEventListener("click", async () => {
+      await A.logout();
       window.location.href = "../index.html";
     }));
   </script>
 </body>
-  </html>
-  
+                                               </html>
+                                               
