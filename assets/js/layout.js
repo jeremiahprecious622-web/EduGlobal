@@ -4,6 +4,8 @@
 // so you only edit the menu in ONE place.
 // ==========================================================
 
+import { applySessionUi } from "./session-ui.js";
+
 const LINKS = [["index.html", "Home"], ["courses.html", "Courses"], ["teachers.html", "Teachers"], ["about.html", "About"], ["contact.html", "Contact"]];
 const clean = (s) => s.replace(/\.html$/, "").replace(/\/$/, "");
 const current = clean(location.pathname.split("/").pop() || "index");
@@ -31,7 +33,7 @@ const HEADER = `<header class="site-header"><div class="container nav">
 <a class="brand" href="index.html" aria-label="EduGlobal home"><img src="assets/img/logo.svg" alt="EduGlobal" width="161" height="44"></a>
 <button class="nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="nav-menu"><svg class="icon" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
 <div class="nav-menu" id="nav-menu"><nav class="nav-links" aria-label="Main">${navLinks}</nav>
-<div class="nav-actions"><a class="btn btn-ghost btn-sm" href="auth/student-login.html">Log in</a><a class="btn btn-primary btn-sm" href="auth/student-register.html">Create account</a></div></div>
+<div class="nav-actions"><a class="btn btn-ghost btn-sm" href="auth/teacher-login.html">Teacher login</a><a class="btn btn-ghost btn-sm" href="auth/student-login.html">Student login</a><a class="btn btn-primary btn-sm" href="auth/student-register.html">Create account</a></div></div>
 </div></header>`;
 
 const FOOTER = `<footer class="site-footer"><div class="container"><div class="footer-grid">
@@ -44,6 +46,8 @@ const FOOTER = `<footer class="site-footer"><div class="container"><div class="f
 document.body.insertAdjacentHTML("afterbegin", SPRITE);
 const h = document.getElementById("site-header"); if (h) h.outerHTML = HEADER;
 const f = document.getElementById("site-footer"); if (f) f.outerHTML = FOOTER;
+
+applySessionUi();
 
 const toggle = document.querySelector(".nav-toggle");
 const menu = document.getElementById("nav-menu");
