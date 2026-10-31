@@ -57,8 +57,10 @@
             <h2 id="live-title">EduGlobal Live Class</h2>
             <p class="when js-live-when"></p>
             <p class="days js-days"></p>
-            <button class="btn btn-gold btn-block js-join" type="button">Join online lesson</button>
           </div>
+
+          <h2 class="section-label" style="margin-top:0">Today's classes</h2>
+          <div class="today-list js-today"></div>
 
           <h2 class="section-label" style="margin-top:0">Join the community</h2>
           <div class="wa-grid" id="wa-grid"></div>
@@ -83,12 +85,13 @@
             <h2>EduGlobal Live Class</h2>
             <p class="when js-live-when"></p>
             <p class="days js-days"></p>
-            <button class="btn btn-gold btn-block js-join" type="button">Join online lesson</button>
           </div>
+          <h2 class="section-label" style="margin-top:0">Today's classes</h2>
+          <div class="today-list js-today"></div>
           <div class="panel">
-            <h2 style="font-size:1.1rem;margin:0">Upcoming classes</h2>
+            <h2 style="font-size:1.1rem;margin:0" id="class-list-title">Upcoming classes</h2>
             <div class="class-list" id="class-list"></div>
-            <p style="margin:1rem 0 0;font-size:0.88rem">The Join button unlocks automatically when class starts. Times are Nigeria time (WAT).</p>
+            <p style="margin:1rem 0 0;font-size:0.88rem">The Join button for a class unlocks when its teacher starts the lesson. Times are Nigeria time (WAT).</p>
           </div>
         </section>
 
@@ -163,6 +166,8 @@
     }
 
     let toastTimer;
+    let myClasses = [], mySubjects = [];
+    const sessions = {}, unsubs = {};
     function toast(text) {
       const t = $("toast"); t.textContent = text; t.hidden = false;
       clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 4500);
@@ -195,10 +200,8 @@
         e.textContent = st.live ? "Class is on until " + L.formatTime(L.LIVE.end) : st.nextLabel + ", " + L.formatTime(L.LIVE.start);
       });
       all(".js-days").forEach((e) => { e.textContent = L.daysText(); });
-      all(".js-join").forEach((b) => { b.disabled = !st.live; });
-      all(".js-live-dot").forEach((d) => { d.hidden = !st.live; });
 
-      const list = $("class-list"); list.innerHTML = "";
+      const list = $("class-list"); if (myClasses.length) return; list.innerHTML = "";
       L.upcomingClasses(4).forEach((c) => {
         const item = document.createElement("div"); item.className = "class-item" + (c.live ? " live" : "");
         const left = document.createElement("div");
@@ -210,19 +213,71 @@
       });
     }
 
-    // The Google Meet link is stored in Firestore (settings/liveClass), not in public code
-    async function joinClass() {
-      if (!L.liveStatus().live) return toast("Online lessons run on Mondays, Thursdays and Fridays.");
+    // ----- Classes for my subjects, and joining a live lesson -----
+    const DAY_LABEL = { 1: "Monday", 4: "Thursday", 5: "Friday" };
+
+    async function loadClasses() {
       try {
-        const snap = await FS.getDoc(FS.doc(F.db, "settings", "liveClass"));
-        const link = snap.exists() ? snap.data().meetLink : "";
-        if (typeof link === "string" && link.startsWith("https://meet.google.com/")) window.location.href = link;
-        else toast("The class link has not been added yet. Please check again in a few minutes.");
-      } catch (e) {
-        toast("Could not open the class. Please try again.");
-      }
+        const snap = await FS.getDocs(FS.query(FS.collection(F.db, "classes"), FS.where("subject", "in", mySubjects)));
+        myClasses = snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((c) => c.active !== false);
+      } catch (e) { myClasses = []; }
+      renderTimetable(); syncListeners(); renderToday();
     }
-    all(".js-join").forEach((b) => b.addEventListener("click", joinClass));
+
+    // Listen for the teacher starting a lesson, only while the class window is open
+    function syncListeners() {
+      const wanted = L.windowOpen() ? myClasses.filter((c) => c.day === L.todayIndex()).map((c) => c.id) : [];
+      Object.keys(unsubs).forEach((id) => { if (!wanted.includes(id)) { unsubs[id](); delete unsubs[id]; delete sessions[id]; } });
+      wanted.forEach((id) => {
+        if (unsubs[id]) return;
+        unsubs[id] = FS.onSnapshot(FS.doc(F.db, "liveSessions", id),
+          (snap) => { sessions[id] = snap.exists() ? snap.data() : null; renderToday(); },
+          () => { sessions[id] = null; if (unsubs[id]) { unsubs[id](); delete unsubs[id]; } renderToday(); });
+      });
+    }
+
+    function renderToday() {
+      const open = L.windowOpen();
+      const today = myClasses.filter((c) => c.day === L.todayIndex()).sort((a, b) => a.start.localeCompare(b.start));
+      let anyLive = false;
+      all(".js-today").forEach((box) => {
+        box.innerHTML = "";
+        if (!myClasses.length) { const p = document.createElement("p"); p.className = "today-note"; p.textContent = "Your timetable is being prepared. Classes for your subjects will appear here."; box.append(p); return; }
+        if (!today.length) { const p = document.createElement("p"); p.className = "today-note"; p.textContent = "No classes today. Live classes run on Mondays, Thursdays and Fridays."; box.append(p); return; }
+        today.forEach((c) => {
+          const s = sessions[c.id]; const live = open && L.isSessionLive(s); if (live) anyLive = true;
+          const row = document.createElement("div"); row.className = "today-row" + (live ? " live" : "");
+          const left = document.createElement("div");
+          const strong = document.createElement("strong"); strong.textContent = c.subject + " - " + c.title;
+          const small = document.createElement("small"); small.textContent = L.classTimeText(c) + " - " + c.teacherName;
+          left.append(strong, small);
+          const btn = document.createElement("button"); btn.type = "button";
+          btn.className = "btn btn-sm " + (live ? "btn-primary" : "btn-ghost");
+          btn.disabled = !live;
+          btn.textContent = live ? "Join live class" : open ? "Waiting for teacher" : "Opens at " + L.formatTime(L.LIVE.start);
+          btn.addEventListener("click", () => { if (L.meetLinkOk(s && s.meetLink)) window.location.href = s.meetLink; else toast("The class link is not available yet."); });
+          row.append(left, btn); box.append(row);
+        });
+      });
+      all(".js-live-dot").forEach((d) => { d.hidden = !anyLive; });
+    }
+
+    function renderTimetable() {
+      if (!myClasses.length) return;
+      $("class-list-title").textContent = "My weekly timetable";
+      const list = $("class-list"); list.innerHTML = "";
+      [1, 4, 5].forEach((day) => {
+        myClasses.filter((c) => c.day === day).sort((a, b) => a.start.localeCompare(b.start)).forEach((c) => {
+          const item = document.createElement("div"); item.className = "class-item";
+          const left = document.createElement("div");
+          const strong = document.createElement("strong"); strong.textContent = DAY_LABEL[day] + " - " + c.subject;
+          const sub = document.createElement("span"); sub.textContent = c.teacherName;
+          left.append(strong, sub);
+          const time = document.createElement("span"); time.textContent = L.classTimeText(c);
+          item.append(left, time); list.append(item);
+        });
+      });
+    }
 
     // ----- WhatsApp groups and channels (links are kept in Firestore: settings/whatsapp) -----
     const WA_ITEMS = [
@@ -284,7 +339,7 @@
         catch (e) { toast(A.friendlyError(e)); }
       });
 
-      renderLive(); setInterval(renderLive, 30000); loadWhatsApp();
+      renderLive(); mySubjects = profile.subjects; loadClasses(); setInterval(() => { renderLive(); syncListeners(); renderToday(); }, 30000); loadWhatsApp();
       $("loading").hidden = true; $("content").hidden = false;
       show(location.hash.slice(1) || "home");
     });
@@ -295,5 +350,5 @@
     }));
   </script>
 </body>
-  </html>
-  
+                                              </html>
+      
