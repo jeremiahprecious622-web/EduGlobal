@@ -1,33 +1,31 @@
 rules_version = '2';
 
 // ==========================================================
-// EduGlobal - Firestore Security Rules (Stage 3)
+// EduGlobal - Firestore Security Rules (Live classes update)
 // Everything is blocked unless a rule below allows it.
+// Times are UTC. Nigeria time (WAT) is UTC + 1, so
+// 5:00 PM to 8:00 PM WAT is 16:00 to 19:00 UTC.
 // ==========================================================
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    function signedIn() {
-      return request.auth != null;
-    }
+    // ---------- helper functions ----------
+    function signedIn() { return request.auth != null; }
+    function isVerified() { return signedIn() && request.auth.token.email_verified == true; }
+    function me() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
+    function isSuperAdmin() { return isVerified() && me().role == 'superadmin'; }
+    function isStudent() { return isVerified() && me().role == 'student' && me().status == 'active'; }
+    function canTeach() { return isVerified() && me().role in ['teacher', 'superadmin'] && me().status == 'active'; }
 
-    function isVerified() {
-      return signedIn() && request.auth.token.email_verified == true;
-    }
+    // Monday, Thursday or Friday (counted from the day number since 1970, when day 0 was a Thursday)
+    function dayOk() { return (math.floor(request.time.toMillis() / 86400000) + 4) % 7 in [1, 4, 5]; }
+    function inLiveWindow() { return dayOk() && request.time.hours() >= 16 && request.time.hours() < 19; }
 
-    function isSuperAdmin() {
-      return signedIn()
-        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'superadmin';
-    }
-
+    // ---------- users ----------
     match /users/{uid} {
-
-      // A user can read their own profile. The super admin can read all.
       allow read: if signedIn() && (request.auth.uid == uid || isSuperAdmin());
 
-      // Registration: you can only create YOUR OWN profile, and only as an
-      // active student. Nobody can make themselves a teacher or admin here.
       allow create: if signedIn()
         && request.auth.uid == uid
         && request.resource.data.keys().hasOnly(
@@ -49,7 +47,6 @@ service cloud.firestore {
         && request.resource.data.consentAt == request.time
         && request.resource.data.createdAt == request.time;
 
-      // Students can change only these profile fields. Never role or status.
       allow update: if signedIn()
         && request.auth.uid == uid
         && request.resource.data.diff(resource.data).affectedKeys()
@@ -58,14 +55,104 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // Live class settings (the Google Meet link).
-    // Verified, logged-in students can read it. Only the super admin can change it.
-    match /settings/liveClass {
-      allow read: if isVerified();
+    // ---------- teachers (created and managed by the super admin) ----------
+    match /teachers/{uid} {
+      allow read: if isVerified() && (isSuperAdmin() || request.auth.uid == uid);
+      allow create: if isSuperAdmin()
+        && request.resource.data.keys().hasOnly(['fullName','email','subjects','status','isFounder','createdAt'])
+        && request.resource.data.subjects is list
+        && request.resource.data.subjects.size() <= 15
+        && request.resource.data.status in ['active', 'suspended'];
+      allow update: if isSuperAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['subjects', 'status'])
+        && request.resource.data.subjects.size() <= 15
+        && request.resource.data.status in ['active', 'suspended'];
+      allow delete: if isSuperAdmin();
+    }
+
+    // ---------- classes (the timetable, created by the super admin) ----------
+    match /classes/{classId} {
+      allow read: if isSuperAdmin() || isStudent()
+        || (canTeach() && resource.data.teacherUid == request.auth.uid);
+
+      allow create: if isSuperAdmin()
+        && request.resource.data.keys().hasOnly(
+             ['subject','title','teacherUid','teacherName','day','start','end','active','createdAt'])
+        && request.resource.data.subject is string
+        && request.resource.data.subject.size() > 0 && request.resource.data.subject.size() <= 60
+        && request.resource.data.title is string && request.resource.data.title.size() <= 80
+        && request.resource.data.teacherUid is string
+        && request.resource.data.teacherName is string && request.resource.data.teacherName.size() <= 80
+        && request.resource.data.day in [1, 4, 5]
+        && request.resource.data.start.matches('^1[7-9]:[0-5][0-9]$')
+        && (request.resource.data.end.matches('^1[7-9]:[0-5][0-9]$') || request.resource.data.end == '20:00')
+        && request.resource.data.start < request.resource.data.end
+        && request.resource.data.active is bool
+        // the teacher must exist and be assigned to this subject
+        && exists(/databases/$(database)/documents/teachers/$(request.resource.data.teacherUid))
+        && get(/databases/$(database)/documents/teachers/$(request.resource.data.teacherUid))
+             .data.subjects.hasAny([request.resource.data.subject]);
+
+      allow update: if isSuperAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['active']);
+      allow delete: if isSuperAdmin();
+    }
+
+    // ---------- live sessions (written ONLY when a teacher starts a lesson) ----------
+    match /liveSessions/{classId} {
+
+      allow read: if isVerified() && (
+        resource == null
+        || (canTeach() && (resource.data.teacherUid == request.auth.uid || isSuperAdmin()))
+        || (isStudent() && inLiveWindow() && me().subjects.hasAny([resource.data.subject]))
+      );
+
+      allow create: if startOk(classId, request.resource.data);
+      allow update: if startOk(classId, request.resource.data) || endOk();
+      allow delete: if false;
+
+      function classOf(id) { return get(/databases/$(database)/documents/classes/$(id)).data; }
+
+      // Starting a lesson: the teacher owns the class, it is a class day and time,
+      // and the link is a real Google Meet link.
+      function startOk(id, d) {
+        return canTeach()
+          && classOf(id).teacherUid == request.auth.uid
+          && inLiveWindow()
+          && d.keys().hasOnly(['classId','subject','title','teacherUid','teacherName','meetLink','status','startedAt'])
+          && d.classId == id
+          && d.subject == classOf(id).subject
+          && d.teacherUid == request.auth.uid
+          && d.status == 'live'
+          && d.startedAt == request.time
+          && d.title is string && d.title.size() <= 80
+          && d.teacherName is string && d.teacherName.size() <= 80
+          && d.meetLink is string
+          && d.meetLink.matches('^https://meet[.]google[.]com/[a-zA-Z0-9/_?=&.-]{3,80}$');
+      }
+
+      // Ending a lesson: also removes the link
+      function endOk() {
+        return canTeach()
+          && resource.data.teacherUid == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','endedAt','meetLink'])
+          && request.resource.data.status == 'ended'
+          && request.resource.data.endedAt == request.time
+          && request.resource.data.meetLink == '';
+      }
+    }
+
+    // ---------- settings ----------
+    //   contact   : public contact details (anyone can read)
+    //   liveClass : old single Meet link (kept, no longer used by the dashboard)
+    //   whatsapp  : WhatsApp links (verified, logged-in users can read)
+    match /settings/{docId} {
+      allow read: if docId == 'contact'
+                  || (isVerified() && docId in ['liveClass', 'whatsapp']);
       allow write: if isSuperAdmin();
     }
 
-    // Everything else is closed until a later stage opens it.
+    // Everything else is closed.
     match /{document=**} {
       allow read, write: if false;
     }
