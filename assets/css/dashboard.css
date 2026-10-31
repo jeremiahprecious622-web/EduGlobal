@@ -1,0 +1,91 @@
+/* ==========================================================
+   EduGlobal - dashboard.css
+   Student dashboard: phone top bar and bottom icons,
+   laptop sidebar, views, live card.
+   ========================================================== */
+
+body { background: var(--soft); }
+.app { min-height: 100vh; }
+
+/* Phone top bar */
+.app-top { position: sticky; top: 0; z-index: 30; display: flex; justify-content: space-between; align-items: center; padding: 0.7rem 1.1rem; background: rgba(255, 255, 255, 0.94); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+.app-top img, .app-side .logo img { height: 40px; width: auto; }
+.avatar { width: 42px; height: 42px; border-radius: 50%; border: 0; display: grid; place-items: center; font: inherit; font-weight: 800; color: #fff; cursor: pointer; background: linear-gradient(135deg, #2f8cf5, #6d4aff); }
+
+.app-main { padding: 1.3rem 1.1rem 7rem; max-width: 1020px; }
+.view { display: none; }
+.view.active { display: block; animation: fade 0.25s ease; }
+@keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.hello h1 { font-size: clamp(1.5rem, 5vw, 2.1rem); margin-bottom: 0.2rem; }
+.hello p { margin-bottom: 1.2rem; }
+.view-title { font-size: clamp(1.4rem, 4vw, 1.8rem); margin-bottom: 1rem; }
+
+/* Live hero card */
+.live-hero { color: #fff; border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1.3rem; background: radial-gradient(70% 120% at 100% 0%, rgba(109, 74, 255, 0.55), transparent 70%), linear-gradient(135deg, #0b57b8, #06152e); box-shadow: var(--shadow-lg); }
+.live-hero h2 { color: #fff; font-size: 1.3rem; margin: 0.8rem 0 0.2rem; }
+.live-hero .when { font-weight: 700; color: #fff; margin-bottom: 0.15rem; }
+.live-hero .days { font-size: 0.88rem; color: #cfe0fb; margin-bottom: 1.1rem; }
+.live-hero .badge { background: rgba(255, 255, 255, 0.16); color: #fff; }
+.live-hero .badge.live { background: rgba(31, 191, 128, 0.25); color: #9bf5cf; }
+.live-hero .btn[disabled] { opacity: 0.55; }
+
+/* Quick tiles */
+.tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.8rem; margin-bottom: 1.4rem; }
+@media (min-width: 700px) { .tiles { grid-template-columns: repeat(4, 1fr); } }
+.tile { position: relative; text-align: left; font: inherit; cursor: pointer; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 1.1rem; box-shadow: var(--shadow); color: var(--ink); transition: transform 0.2s, border-color 0.2s; }
+.tile:hover:not(:disabled) { transform: translateY(-3px); border-color: #b9d4fb; }
+.tile:disabled { cursor: default; opacity: 0.8; }
+.tile .card-icon { width: 42px; height: 42px; margin-bottom: 0.7rem; }
+.tile strong { display: block; font-size: 0.95rem; }
+.tile em { position: absolute; top: 0.8rem; right: 0.8rem; font-style: normal; font-size: 0.66rem; font-weight: 800; padding: 0.12rem 0.5rem; border-radius: 999px; background: #fff3cf; color: #8a5d00; }
+
+.section-label { font-size: 1.05rem; margin: 1.4rem 0 0.7rem; }
+.panel { background: #fff; border: 1px solid var(--line); border-radius: var(--radius-lg); padding: clamp(1.2rem, 4vw, 1.8rem); box-shadow: var(--shadow); }
+
+/* Live tab: upcoming classes */
+.class-list { display: grid; gap: 0.7rem; margin-top: 1rem; }
+.class-item { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 0.95rem 1.1rem; border: 1px solid var(--line); border-radius: 14px; background: var(--soft); }
+.class-item strong { display: block; }
+.class-item span { font-size: 0.86rem; color: var(--muted); }
+.class-item.live { border-color: #8fe0bd; background: #e9faf2; }
+
+/* Profile */
+.profile-head { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.2rem; }
+.profile-head .avatar { width: 62px; height: 62px; font-size: 1.5rem; cursor: default; }
+.profile-head h2 { margin: 0; font-size: 1.3rem; }
+.profile-head p { margin: 0; font-size: 0.9rem; overflow-wrap: anywhere; }
+.profile-list { display: grid; gap: 0.7rem; margin: 0 0 1.4rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.profile-list div { padding: 0.8rem 1rem; border: 1px solid var(--line); border-radius: 12px; background: var(--soft); }
+.profile-list dt { font-size: 0.78rem; color: var(--muted); font-weight: 600; }
+.profile-list dd { margin: 0; font-weight: 700; }
+.btn-row { display: flex; flex-wrap: wrap; gap: 0.7rem; }
+.btn-danger { background: #fff; color: #b42323; border-color: #f0c2c2; }
+.btn-danger:hover { background: #fdecec; }
+
+/* Phone bottom icons */
+.bottom-nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: grid; grid-template-columns: repeat(5, 1fr); background: rgba(255, 255, 255, 0.97); backdrop-filter: blur(12px); border-top: 1px solid var(--line); padding: 0.35rem 0.3rem calc(0.35rem + env(safe-area-inset-bottom)); box-shadow: 0 -10px 30px -18px rgba(11, 27, 58, 0.35); }
+.bottom-nav button { position: relative; display: flex; flex-direction: column; align-items: center; gap: 0.15rem; padding: 0.45rem 0.2rem; border: 0; background: none; font: inherit; font-size: 0.7rem; font-weight: 700; color: var(--muted); cursor: pointer; border-radius: 12px; }
+.bottom-nav .icon { width: 24px; height: 24px; }
+.bottom-nav button[aria-current="page"] { color: var(--blue); }
+.bottom-nav button[aria-current="page"]::before { content: ""; position: absolute; top: -0.35rem; width: 28px; height: 3px; border-radius: 3px; background: var(--blue); }
+.bottom-nav .live-dot { position: absolute; top: 0.35rem; right: 28%; width: 9px; height: 9px; border-radius: 50%; background: var(--green); border: 2px solid #fff; }
+.bottom-nav .live-dot[hidden] { display: none; }
+
+.toast { position: fixed; left: 50%; bottom: 5.6rem; transform: translateX(-50%); z-index: 70; max-width: min(92vw, 420px); padding: 0.85rem 1.2rem; border-radius: 14px; background: var(--navy); color: #fff; font-weight: 600; font-size: 0.92rem; box-shadow: 0 16px 40px -12px rgba(6, 21, 46, 0.6); }
+.toast[hidden] { display: none; }
+
+/* Laptop: sidebar on the left, no bottom icons */
+.app-side { display: none; }
+@media (min-width: 900px) {
+  .app { display: grid; grid-template-columns: 270px 1fr; }
+  .app-top, .bottom-nav { display: none; }
+  .app-side { display: flex; flex-direction: column; gap: 1.4rem; position: sticky; top: 0; height: 100vh; padding: 1.4rem 1rem; background: #fff; border-right: 1px solid var(--line); }
+  .side-nav { display: grid; gap: 0.25rem; }
+  .side-nav button { display: flex; align-items: center; gap: 0.75rem; width: 100%; padding: 0.75rem 0.9rem; border: 0; background: none; border-radius: 12px; font: inherit; font-weight: 700; font-size: 0.94rem; color: var(--muted); cursor: pointer; text-align: left; }
+  .side-nav button:hover { background: var(--soft); color: var(--ink); }
+  .side-nav button[aria-current="page"] { background: var(--sky); color: var(--blue-d); }
+  .side-bottom { margin-top: auto; }
+  .app-main { padding: 2.2rem 2.4rem 3rem; }
+  .toast { bottom: 2rem; }
+                                                                       }
+             
