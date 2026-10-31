@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="icon" type="image/svg+xml" href="../assets/img/logo-icon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/forms.css">
+  <title>Verify your email | EduGlobal</title>
+  <style>
+    .mail-badge { width: 64px; height: 64px; margin: 0 auto 1.1rem; border-radius: 18px; display: grid; place-items: center; color: #fff; background: linear-gradient(135deg, #2f8cf5, #6d4aff); box-shadow: 0 14px 30px -12px rgba(47, 140, 245, 0.8); }
+    .mail-badge .icon { width: 30px; height: 30px; }
+    .email-chip { display: block; width: fit-content; max-width: 100%; margin: 0 auto 1.4rem; padding: 0.45rem 1rem; border-radius: 999px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(160, 190, 235, 0.3); color: #fff; font-weight: 700; font-size: 0.92rem; overflow-wrap: anywhere; text-align: center; }
+    .stack { display: grid; gap: 0.7rem; }
+    .tips { margin: 1.3rem 0 0; padding: 0.9rem 1rem; border-radius: 12px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(160, 190, 235, 0.18); font-size: 0.86rem; color: #9fb3cf; }
+    .tips p { margin: 0; color: inherit; }
+  </style>
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 7l8.5 6 8.5-6"/></symbol>
+  </svg>
+  <main class="auth-page">
+    <a class="auth-logo" href="../index.html" aria-label="EduGlobal home"><img src="../assets/img/logo.svg" alt="EduGlobal" width="169" height="46"></a>
+    <div class="auth-card narrow">
+      <div class="mail-badge"><svg class="icon"><use href="#i-mail"/></svg></div>
+      <h1>Verify your email</h1>
+      <p class="sub">We sent a verification link to:</p>
+      <span class="email-chip" id="email">Loading...</span>
+      <div id="message" class="message" role="alert"></div>
+      <div class="stack">
+        <button class="btn btn-primary btn-block" id="done" type="button">I have verified my email</button>
+        <button class="btn btn-ghost btn-block" id="resend" type="button">Resend email</button>
+      </div>
+      <div class="tips"><p>Open the email, tap the link, then come back here. If you cannot see it, check your spam or junk folder.</p></div>
+      <p class="auth-switch">Wrong email address? <button class="link-btn" id="switch" type="button">Use a different account</button></p>
+    </div>
+  </main>
+
+  <script type="module">
+    const $ = (id) => document.getElementById(id);
+    const messageBox = $("message");
+    function showMessage(text, type) { messageBox.textContent = text; messageBox.className = "message show " + type; }
+
+    let api;
+    try { api = await import("../assets/js/auth.js"); }
+    catch (e) { showMessage("Could not load assets/js/auth.js. Check that the file exists and firebase-config.js has no typing mistakes.", "error"); }
+
+    if (api) {
+      let cooldown = 0, timer = null;
+      function startCooldown() {
+        cooldown = 60; $("resend").disabled = true;
+        timer = setInterval(() => {
+          cooldown--;
+          if (cooldown <= 0) { clearInterval(timer); $("resend").disabled = false; $("resend").textContent = "Resend email"; }
+          else $("resend").textContent = "Resend email (" + cooldown + "s)";
+        }, 1000);
+      }
+
+      async function checkNow(showFeedback) {
+        try {
+          if (await api.refreshVerified()) {
+            showMessage("Email verified. Taking you to your dashboard...", "success");
+            setTimeout(() => { window.location.href = "../student/dashboard.html"; }, 700);
+            return true;
+          }
+          if (showFeedback) showMessage("Not verified yet. Open the link in the email first, then tap this button again.", "error");
+        } catch (e) { if (showFeedback) showMessage(api.friendlyError(e), "error"); }
+        return false;
+      }
+
+      api.requireSignedIn(async (user) => {
+        $("email").textContent = user.email;
+        if (await checkNow(false)) return;
+        startCooldown();                                  // the first email was just sent
+        setInterval(() => checkNow(false), 5000);         // continues automatically after you verify
+      });
+
+      $("done").addEventListener("click", () => checkNow(true));
+      $("resend").addEventListener("click", async () => {
+        messageBox.className = "message";
+        try { await api.resendVerification(); showMessage("Verification email sent. Check your inbox and spam folder.", "success"); startCooldown(); }
+        catch (e) { showMessage(api.friendlyError(e), "error"); }
+      });
+      $("switch").addEventListener("click", async () => { await api.logout(); window.location.href = "student-register.html"; });
+    }
+  </script>
+</body>
+  </html>
+                                                                                        
