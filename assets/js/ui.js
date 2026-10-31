@@ -6,6 +6,7 @@
 // ==========================================================
 
 import { LIVE, liveStatus, formatTime, daysText } from "./live-schedule.js";
+import { applySessionUi } from "./session-ui.js";
 
 const DASHBOARD = "student/dashboard.html#live"; // logged-out visitors are sent to the login page automatically
 
@@ -27,6 +28,8 @@ if (toggle && menu) {
 function updateHeader() { if (header) header.classList.toggle("scrolled", window.scrollY > 8); }
 window.addEventListener("scroll", updateHeader, { passive: true });
 updateHeader();
+
+applySessionUi();
 
 const year = $("#year");
 if (year) year.textContent = new Date().getFullYear();
@@ -50,4 +53,4 @@ const title = $("#live-title"); if (title) title.textContent = LIVE.title;
 const days = $("#live-days"); if (days) days.textContent = daysText();
 updateLive();
 setInterval(updateLive, 30000);
-  
+      
