@@ -27,6 +27,14 @@
       <h1 class="view-title">My classes</h1>
       <div id="week-list"></div>
     </section>
+    <section class="view" data-view="classroom">
+      <h1 class="view-title">Classroom</h1>
+      <div class="panel" style="margin-bottom:1rem">
+        <label for="room-subject" style="font-weight:700;font-size:0.85rem">Subject</label>
+        <select class="dash-input" id="room-subject"><option value="">Choose a subject</option></select>
+      </div>
+      <div id="room-box"></div>
+    </section>
     <section class="view" data-view="profile">
       <h1 class="view-title">Profile</h1>
       <div class="panel">
@@ -60,15 +68,16 @@ try {
 }
 let toastTimer;
 function toast(text) { const t = $("toast"); t.textContent = text; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 5000); }
-const DAYS = { 1: "Monday", 4: "Thursday", 5: "Friday" };
+const DAYS = { 1: "Monday", 2: "Tuesday", 3: "Wednesday", 4: "Thursday", 5: "Friday", 6: "Saturday" };
 S.mountShell({ items: [
   { path: "teacher/dashboard", hash: "today", default: true, label: "Today", icon: "video" },
   { path: "teacher/dashboard", hash: "classes", label: "My classes", icon: "calendar" },
+  { path: "teacher/dashboard", hash: "classroom", label: "Classroom", icon: "chat" },
   { path: "teacher/dashboard", hash: "profile", label: "Profile", icon: "user" }
 ], onLogout: async () => { await A.logout(); window.location.href = "../auth/teacher-login.html"; } });
 
 let user, profile, teacher = null, classes = [], sessions = {};
-const VIEWS = ["today", "classes", "profile"];
+const VIEWS = ["today", "classes", "classroom", "profile"];
 
 function show(name) {
   if (!VIEWS.includes(name)) name = "today";
@@ -76,11 +85,23 @@ function show(name) {
 }
 window.addEventListener("hashchange", () => show(location.hash.slice(1)));
 
+let closeRoom = null, RM = null;
+async function openRoomFor(subject) {
+  if (!subject) return;
+  try {
+    RM = RM || await import("../assets/js/classroom.js");
+    if (closeRoom) closeRoom();
+    $("room-subject").value = subject;
+    closeRoom = RM.mountRoom($("room-box"), { subject, user, profile, moderator: true, canPostLessons: true });
+  } catch (e) { toast("Could not open the classroom."); }
+}
+$("room-subject").addEventListener("change", () => openRoomFor($("room-subject").value));
+
 function savedLink() { try { return localStorage.getItem("eg_meet_" + user.uid) || ""; } catch (e) { return ""; } }
 function saveLink(v) { try { localStorage.setItem("eg_meet_" + user.uid, v); } catch (e) {} }
 
 async function loadSessions() {
-  const today = classes.filter((c) => c.day === L.todayIndex());
+  const today = classes.filter((c) => c.day === L.todayIndex() && c.mode !== "room");
   for (const c of today) {
     try { const s = await FS.getDoc(FS.doc(F.db, "liveSessions", c.id)); sessions[c.id] = s.exists() ? s.data() : null; } catch (e) { sessions[c.id] = null; }
   }
@@ -94,6 +115,15 @@ function renderToday() {
   if (!today.length) { box.append(el("p", "today-note", "You have no classes today.")); return; }
 
   today.forEach((c) => {
+    if (c.mode === "room") {
+      const rcard = el("div", "item-card"); const rhead = el("div", "item-head"); const rinfo = el("div");
+      rinfo.append(el("h3", "", c.subject + " - " + c.title), el("p", "", L.classTimeText(c) + " - Classroom day"));
+      rhead.append(rinfo, el("span", "status", "Classroom"));
+      rcard.append(rhead, el("p", "", "No Google Meet today. Post today's lesson in the classroom and answer your students' questions during class time."));
+      const openBtn = el("button", "btn btn-primary btn-sm", "Open classroom"); openBtn.type = "button";
+      openBtn.addEventListener("click", () => { location.hash = "#classroom"; openRoomFor(c.subject); });
+      const ractions = el("div", "row-actions"); ractions.append(openBtn); rcard.append(ractions); box.append(rcard); return;
+    }
     const session = sessions[c.id]; const live = L.isSessionLive(session);
     const card = el("div", "item-card"); const head = el("div", "item-head");
     const info = el("div"); info.append(el("h3", "", c.subject + " - " + c.title), el("p", "", L.classTimeText(c)));
@@ -139,13 +169,13 @@ function renderToday() {
 function renderWeek() {
   const box = $("week-list"); box.innerHTML = "";
   if (!classes.length) { box.append(el("p", "today-note", "No classes have been assigned to you yet.")); return; }
-  [1, 4, 5].forEach((day) => {
+  [1, 2, 3, 4, 5, 6].forEach((day) => {
     const list = classes.filter((c) => c.day === day).sort((a, b) => a.start.localeCompare(b.start));
     if (!list.length) return;
     box.append(el("p", "day-label", DAYS[day]));
     list.forEach((c) => {
       const card = el("div", "item-card"); const head = el("div", "item-head"); const info = el("div");
-      info.append(el("h3", "", c.subject + " - " + c.title), el("p", "", L.classTimeText(c)));
+      info.append(el("h3", "", c.subject + " - " + c.title), el("p", "", L.classTimeText(c) + (c.mode === "room" ? " - Classroom day" : " - Google Meet")));
       head.append(info); card.append(head); box.append(card);
     });
   });
@@ -173,6 +203,8 @@ A.requireRole(["teacher", "superadmin"], async (u, p) => {
     const back = el("a", "btn btn-primary btn-sm", "Back to admin dashboard"); back.href = "../admin/dashboard.html"; $("p-actions").append(back);
   }
   renderToday(); renderWeek();
+  (teacher.subjects || []).forEach((name) => $("room-subject").add(new Option(name, name)));
+  if ((teacher.subjects || []).length === 1) openRoomFor(teacher.subjects[0]);
   let lastOpen = L.windowOpen();
   setInterval(() => { if (L.windowOpen() !== lastOpen) { lastOpen = L.windowOpen(); renderToday(); } }, 30000);
   $("loading").hidden = true; $("content").hidden = false; show(location.hash.slice(1));
@@ -180,5 +212,5 @@ A.requireRole(["teacher", "superadmin"], async (u, p) => {
 
 </script>
 </body>
-  </html>
-  
+        </html>
+        
