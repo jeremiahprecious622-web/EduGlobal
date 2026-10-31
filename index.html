@@ -12,6 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/base.css">
   <link rel="stylesheet" href="assets/css/components.css">
+  <link rel="stylesheet" href="assets/css/pages.css">
 </head>
 <body>
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -49,7 +50,8 @@
           <a href="contact.html">Contact</a>
         </nav>
         <div class="nav-actions">
-          <a class="btn btn-ghost btn-sm" href="auth/student-login.html">Log in</a>
+          <a class="btn btn-ghost btn-sm" href="auth/teacher-login.html">Teacher login</a>
+          <a class="btn btn-ghost btn-sm" href="auth/student-login.html">Student login</a>
           <a class="btn btn-primary btn-sm" href="auth/student-register.html">Create account</a>
         </div>
       </div>
@@ -65,7 +67,7 @@
             <h1>Your future has <span class="grad">no borders.</span></h1>
             <p class="lead">Live classes, recorded lessons, practice exams and an AI study assistant for students in Nigeria and around the world.</p>
             <div class="hero-cta">
-              <a class="btn btn-primary" href="auth/student-register.html">Start learning</a>
+              <a class="btn btn-primary" href="auth/student-register.html" data-session-cta>Start learning</a>
               <a class="btn btn-ghost" href="courses.html">Browse courses</a>
             </div>
             <p class="hero-note">Are you a teacher? <a href="teacher-apply.html">Apply to join our teaching team</a></p>
@@ -184,6 +186,25 @@
       </div>
     </section>
 
+    <section class="section section-soft" id="for-teachers">
+      <div class="container split">
+        <div>
+          <span class="kicker">For teachers</span>
+          <h2>Teach with EduGlobal</h2>
+          <p>Share your knowledge and inspire students. Every teacher is reviewed and approved by the administrator before teaching, and only a small team is admitted.</p>
+          <div class="hero-cta"><a class="btn btn-gold" href="teacher-apply.html">Apply to teach</a><a class="btn btn-ghost" href="auth/teacher-login.html">Teacher login</a></div>
+        </div>
+        <div class="card">
+          <h3>What teachers get</h3>
+          <ul class="list-check" style="margin-top:0.8rem;padding:0">
+            <li>Your own subjects and classes</li>
+            <li>Live Google Meet lessons</li>
+            <li>A classroom for daily lessons and student questions</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
     <section class="section" style="padding-top:0">
       <div class="container">
         <div class="cta">
@@ -212,5 +233,5 @@
 
   <script type="module" src="assets/js/ui.js"></script>
 </body>
-                                                                                                                              </html>
-  
+  </html>
+                                              
