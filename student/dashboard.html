@@ -37,7 +37,7 @@
       <nav class="side-nav" aria-label="Dashboard">
         <button class="js-go" data-go="home"><svg class="icon"><use href="#i-home"/></svg>Home</button>
         <button class="js-go" data-go="live"><svg class="icon"><use href="#i-video"/></svg>Live lessons</button>
-        <button class="js-go" data-go="courses"><svg class="icon"><use href="#i-book"/></svg>My courses</button>
+        <button class="js-go" data-go="courses"><svg class="icon"><use href="#i-book"/></svg>Classroom</button>
         <button class="js-go" data-go="practice"><svg class="icon"><use href="#i-exam"/></svg>Practice</button>
         <button class="js-go" data-go="profile"><svg class="icon"><use href="#i-user"/></svg>My profile</button>
       </nav>
@@ -67,7 +67,7 @@
           <p class="wa-empty" id="wa-empty" hidden>WhatsApp classrooms will appear here once your teacher adds them.</p>
 
           <div class="tiles">
-            <button class="tile js-go" data-go="courses"><div class="card-icon t-blue"><svg class="icon"><use href="#i-book"/></svg></div><strong>My courses</strong></button>
+            <button class="tile js-go" data-go="courses"><div class="card-icon t-blue"><svg class="icon"><use href="#i-book"/></svg></div><strong>Classroom</strong></button>
             <button class="tile js-go" data-go="practice"><div class="card-icon t-gold"><svg class="icon"><use href="#i-exam"/></svg></div><strong>Practice exams</strong></button>
             <button class="tile" disabled><em>Soon</em><div class="card-icon t-violet"><svg class="icon"><use href="#i-spark"/></svg></div><strong>AI assistant</strong></button>
             <button class="tile" disabled><em>Soon</em><div class="card-icon t-green"><svg class="icon"><use href="#i-file"/></svg></div><strong>Study materials</strong></button>
@@ -97,11 +97,14 @@
 
         <!-- COURSES -->
         <section class="view" data-view="courses">
-          <h1 class="view-title">My courses</h1>
-          <div class="empty">
-            <div class="card-icon t-blue"><svg class="icon"><use href="#i-book"/></svg></div>
-            <h3>Courses are on the way</h3>
-            <p>Your lessons, recorded videos and notes will appear here once teachers publish them.</p>
+          <h1 class="view-title">Classroom</h1>
+          <div id="room-pick">
+            <p>Choose a subject to read daily lessons and chat with your class and teacher.</p>
+            <div class="tiles" id="room-subjects"></div>
+          </div>
+          <div id="room-wrap" hidden>
+            <button class="btn btn-ghost btn-sm room-back" id="room-back" type="button">All subjects</button>
+            <div id="room-box"></div>
           </div>
         </section>
 
@@ -141,7 +144,7 @@
     <nav class="bottom-nav" aria-label="Dashboard">
       <button class="js-go" data-go="home"><svg class="icon"><use href="#i-home"/></svg>Home</button>
       <button class="js-go" data-go="live"><svg class="icon"><use href="#i-video"/></svg>Live<span class="live-dot js-live-dot" hidden></span></button>
-      <button class="js-go" data-go="courses"><svg class="icon"><use href="#i-book"/></svg>Courses</button>
+      <button class="js-go" data-go="courses"><svg class="icon"><use href="#i-book"/></svg>Classroom</button>
       <button class="js-go" data-go="practice"><svg class="icon"><use href="#i-exam"/></svg>Practice</button>
       <button class="js-go" data-go="profile"><svg class="icon"><use href="#i-user"/></svg>Profile</button>
     </nav>
@@ -167,6 +170,7 @@
 
     let toastTimer;
     let myClasses = [], mySubjects = [];
+    let currentUser = null, currentProfile = null, closeRoom = null, RM = null;
     const sessions = {}, unsubs = {};
     function toast(text) {
       const t = $("toast"); t.textContent = text; t.hidden = false;
@@ -213,8 +217,31 @@
       });
     }
 
+    // ----- Classroom: lessons and chat for each subject -----
+    function buildRoomCards() {
+      const grid = $("room-subjects"); grid.innerHTML = "";
+      currentProfile.subjects.forEach((name) => {
+        const b = document.createElement("button"); b.type = "button"; b.className = "tile";
+        const icon = document.createElement("div"); icon.className = "card-icon t-blue"; icon.innerHTML = '<svg class="icon"><use href="#i-book"/></svg>';
+        const label = document.createElement("strong"); label.textContent = name;
+        b.append(icon, label); b.addEventListener("click", () => openRoom(name)); grid.append(b);
+      });
+    }
+    async function openRoom(subject) {
+      try {
+        RM = RM || await import("../assets/js/classroom.js");
+        if (closeRoom) closeRoom();
+        closeRoom = RM.mountRoom($("room-box"), { subject, user: currentUser, profile: currentProfile, moderator: false, canPostLessons: false });
+        $("room-pick").hidden = true; $("room-wrap").hidden = false; show("courses");
+      } catch (e) { toast("Could not open the classroom. Please try again."); }
+    }
+    $("room-back").addEventListener("click", () => {
+      if (closeRoom) { closeRoom(); closeRoom = null; }
+      $("room-box").innerHTML = ""; $("room-wrap").hidden = true; $("room-pick").hidden = false;
+    });
+
     // ----- Classes for my subjects, and joining a live lesson -----
-    const DAY_LABEL = { 1: "Monday", 4: "Thursday", 5: "Friday" };
+    const DAY_LABEL = { 1: "Monday", 2: "Tuesday", 3: "Wednesday", 4: "Thursday", 5: "Friday", 6: "Saturday" };
 
     async function loadClasses() {
       try {
@@ -226,7 +253,7 @@
 
     // Listen for the teacher starting a lesson, only while the class window is open
     function syncListeners() {
-      const wanted = L.windowOpen() ? myClasses.filter((c) => c.day === L.todayIndex()).map((c) => c.id) : [];
+      const wanted = L.windowOpen() ? myClasses.filter((c) => c.day === L.todayIndex() && c.mode !== "room").map((c) => c.id) : [];
       Object.keys(unsubs).forEach((id) => { if (!wanted.includes(id)) { unsubs[id](); delete unsubs[id]; delete sessions[id]; } });
       wanted.forEach((id) => {
         if (unsubs[id]) return;
@@ -243,7 +270,7 @@
       all(".js-today").forEach((box) => {
         box.innerHTML = "";
         if (!myClasses.length) { const p = document.createElement("p"); p.className = "today-note"; p.textContent = "Your timetable is being prepared. Classes for your subjects will appear here."; box.append(p); return; }
-        if (!today.length) { const p = document.createElement("p"); p.className = "today-note"; p.textContent = "No classes today. Live classes run on Mondays, Thursdays and Fridays."; box.append(p); return; }
+        if (!today.length) { const p = document.createElement("p"); p.className = "today-note"; p.textContent = "No classes today. Google Meet classes run on Mondays, Thursdays and Fridays. Classroom days are Tuesdays, Wednesdays and Saturdays."; box.append(p); return; }
         today.forEach((c) => {
           const s = sessions[c.id]; const live = open && L.isSessionLive(s); if (live) anyLive = true;
           const row = document.createElement("div"); row.className = "today-row" + (live ? " live" : "");
@@ -255,6 +282,10 @@
           btn.className = "btn btn-sm " + (live ? "btn-primary" : "btn-ghost");
           btn.disabled = !live;
           btn.textContent = live ? "Join live class" : open ? "Waiting for teacher" : "Opens at " + L.formatTime(L.LIVE.start);
+          if (c.mode === "room") {
+            btn.className = "btn btn-sm btn-primary"; btn.disabled = false; btn.textContent = "Open classroom";
+            btn.addEventListener("click", () => openRoom(c.subject)); row.append(left, btn); box.append(row); return;
+          }
           btn.addEventListener("click", () => { if (L.meetLinkOk(s && s.meetLink)) window.location.href = s.meetLink; else toast("The class link is not available yet."); });
           row.append(left, btn); box.append(row);
         });
@@ -266,12 +297,12 @@
       if (!myClasses.length) return;
       $("class-list-title").textContent = "My weekly timetable";
       const list = $("class-list"); list.innerHTML = "";
-      [1, 4, 5].forEach((day) => {
+      [1, 2, 3, 4, 5, 6].forEach((day) => {
         myClasses.filter((c) => c.day === day).sort((a, b) => a.start.localeCompare(b.start)).forEach((c) => {
           const item = document.createElement("div"); item.className = "class-item";
           const left = document.createElement("div");
           const strong = document.createElement("strong"); strong.textContent = DAY_LABEL[day] + " - " + c.subject;
-          const sub = document.createElement("span"); sub.textContent = c.teacherName;
+          const sub = document.createElement("span"); sub.textContent = c.teacherName + (c.mode === "room" ? " - Classroom day" : " - Google Meet");
           left.append(strong, sub);
           const time = document.createElement("span"); time.textContent = L.classTimeText(c);
           item.append(left, time); list.append(item);
@@ -319,36 +350,4 @@
     // ----- Fill the page once we know the student is logged in and verified -----
     A.requireStudent((user, profile) => {
       const first = profile.fullName.split(" ")[0];
-      const hour = new Date().getHours();
-      $("greeting").textContent = (hour < 12 ? "Good morning, " : hour < 17 ? "Good afternoon, " : "Good evening, ") + first;
-      const initial = profile.fullName.trim().charAt(0).toUpperCase();
-      all(".js-avatar, .js-avatar-big").forEach((e) => { e.textContent = initial; });
-
-      const curriculum = D.CURRICULA[profile.curriculum];
-      const level = curriculum ? curriculum.levels.find((l) => l.id === profile.level) : null;
-      $("p-name").textContent = profile.fullName;
-      $("p-email").textContent = profile.email;
-      $("p-country").textContent = profile.country;
-      $("p-curriculum").textContent = curriculum ? curriculum.name : profile.curriculum;
-      $("p-level").textContent = level ? level.label : profile.level;
-      $("p-subjects").textContent = profile.subjects.join(", ");
-      profile.subjects.forEach((s) => { const c = document.createElement("span"); c.className = "chip"; c.textContent = s; $("subject-chips").append(c); });
-
-      $("reset-pw").addEventListener("click", async () => {
-        try { await A.resetPassword(user.email); toast("Password reset email sent. Check your inbox."); }
-        catch (e) { toast(A.friendlyError(e)); }
-      });
-
-      renderLive(); mySubjects = profile.subjects; loadClasses(); setInterval(() => { renderLive(); syncListeners(); renderToday(); }, 30000); loadWhatsApp();
-      $("loading").hidden = true; $("content").hidden = false;
-      show(location.hash.slice(1) || "home");
-    });
-
-    all(".js-logout").forEach((b) => b.addEventListener("click", async () => {
-      await A.logout();
-      window.location.href = "../index.html";
-    }));
-  </script>
-</body>
-                                              </html>
-      
+      const
