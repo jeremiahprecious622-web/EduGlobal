@@ -87,5 +87,18 @@ body { background: var(--soft); }
   .side-bottom { margin-top: auto; }
   .app-main { padding: 2.2rem 2.4rem 3rem; }
   .toast { bottom: 2rem; }
-                                                                       }
-             
+}
+
+/* WhatsApp community cards */
+.wa-grid { display: grid; gap: 0.7rem; margin-bottom: 1.4rem; }
+@media (min-width: 700px) { .wa-grid { grid-template-columns: 1fr 1fr; } }
+.wa-card { display: flex; align-items: center; gap: 0.9rem; padding: 0.95rem 1rem; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); transition: transform 0.2s, border-color 0.2s; }
+.wa-card:hover { transform: translateY(-2px); border-color: #8fe0bd; }
+.wa-icon { width: 46px; height: 46px; flex: none; display: grid; place-items: center; border-radius: 14px; color: #fff; background: linear-gradient(135deg, #34d97b, #0fa25a); box-shadow: 0 10px 20px -10px rgba(15, 162, 90, 0.8); }
+.wa-icon .icon { width: 26px; height: 26px; }
+.wa-text { flex: 1; min-width: 0; display: grid; }
+.wa-text strong { font-size: 0.97rem; }
+.wa-text small { color: var(--muted); font-size: 0.82rem; }
+.wa-join { flex: none; padding: 0.4rem 1rem; border-radius: 999px; font-weight: 800; font-size: 0.85rem; color: #0b7a50; background: #e3f8ee; }
+.wa-empty { font-size: 0.9rem; margin-bottom: 1.4rem; }
+.wa-empty[hidden] { display: none; }
