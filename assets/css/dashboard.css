@@ -102,3 +102,49 @@ body { background: var(--soft); }
 .wa-join { flex: none; padding: 0.4rem 1rem; border-radius: 999px; font-weight: 800; font-size: 0.85rem; color: #0b7a50; background: #e3f8ee; }
 .wa-empty { font-size: 0.9rem; margin-bottom: 1.4rem; }
 .wa-empty[hidden] { display: none; }
+
+/* ==========================================================
+   Admin and teacher pages
+   ========================================================== */
+.side-nav a { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0.9rem; border-radius: 12px; font-weight: 700; font-size: 0.94rem; color: var(--muted); }
+.side-nav a:hover { background: var(--soft); color: var(--ink); }
+.side-nav a[aria-current="page"] { background: var(--sky); color: var(--blue-d); }
+.bottom-nav.auto { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 1fr; }
+.bottom-nav a { position: relative; display: flex; flex-direction: column; align-items: center; gap: 0.15rem; padding: 0.45rem 0.2rem; font-size: 0.7rem; font-weight: 700; color: var(--muted); border-radius: 12px; }
+.bottom-nav a .icon { width: 24px; height: 24px; }
+.bottom-nav a[aria-current="page"] { color: var(--blue); }
+@media (max-width: 899px) { .side-nav a { display: none; } }
+
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.8rem; margin-bottom: 1.4rem; }
+.stat { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 1rem 1.1rem; box-shadow: var(--shadow); }
+.stat span { display: block; font-size: 0.8rem; font-weight: 600; color: var(--muted); }
+.stat strong { display: block; font-size: 1.7rem; letter-spacing: -0.02em; color: var(--blue); }
+
+.dash-form { display: grid; gap: 0.9rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); align-items: end; }
+.dash-form label { display: block; font-size: 0.82rem; font-weight: 700; margin-bottom: 0.3rem; }
+.dash-input { width: 100%; min-height: 46px; padding: 0.6rem 0.85rem; font: inherit; font-size: 0.95rem; color: var(--ink); background: #fff; border: 1.5px solid #d5e0f0; border-radius: 12px; }
+.dash-input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 4px rgba(20, 115, 230, 0.15); }
+.cbx-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.45rem; margin: 0.7rem 0; }
+.cbx { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.7rem; font-size: 0.86rem; font-weight: 600; border: 1.5px solid #d5e0f0; border-radius: 10px; cursor: pointer; background: #fff; }
+.cbx input { accent-color: var(--blue); width: 17px; height: 17px; }
+.cbx:has(input:checked) { background: var(--sky); border-color: var(--blue); }
+
+.item-card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 1.1rem 1.2rem; box-shadow: var(--shadow); margin-bottom: 0.8rem; }
+.item-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.8rem; flex-wrap: wrap; }
+.item-head h3 { margin: 0; font-size: 1.05rem; }
+.item-head p { margin: 0; font-size: 0.86rem; }
+.status { display: inline-block; padding: 0.2rem 0.7rem; border-radius: 999px; font-size: 0.74rem; font-weight: 800; background: var(--sky); color: var(--blue-d); }
+.status.green { background: #e3f8ee; color: #0b7a50; }
+.status.red { background: #fdecec; color: #a52525; }
+.status.grey { background: #eef1f6; color: #5b6b86; }
+.row-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.8rem; }
+.day-label { font-size: 0.82rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--blue); margin: 1.2rem 0 0.5rem; }
+
+/* Student today list */
+.today-list { display: grid; gap: 0.7rem; margin-bottom: 1.4rem; }
+.today-row { display: flex; justify-content: space-between; align-items: center; gap: 0.8rem; flex-wrap: wrap; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 0.95rem 1.1rem; box-shadow: var(--shadow); }
+.today-row.live { border-color: #8fe0bd; background: #f0fbf6; }
+.today-row strong { display: block; }
+.today-row small { color: var(--muted); font-size: 0.84rem; }
+.today-note { font-size: 0.92rem; padding: 0.9rem 1.1rem; background: #fff; border: 1px dashed #c9daf2; border-radius: var(--radius); margin: 0; }
+   
