@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="icon" type="image/svg+xml" href="../assets/img/logo-icon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/forms.css">
+  <title>Teacher and admin login | EduGlobal</title>
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M3 3l18 18M10.6 5.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4M6.5 6.6C3.8 8.4 2 12 2 12s3.6 7 10 7c1.7 0 3.2-.4 4.5-1M9.9 9.9a3 3 0 0 0 4.2 4.2"/></symbol>
+  </svg>
+  <main class="auth-page">
+    <a class="auth-logo" href="../index.html" aria-label="EduGlobal home"><img src="../assets/img/logo.svg" alt="EduGlobal" width="169" height="46"></a>
+    <div class="auth-card narrow">
+      <h1>Staff login</h1>
+      <p class="sub">For EduGlobal teachers and administrators.</p>
+      <div id="message" class="message" role="alert"></div>
+      <form id="login-form" novalidate>
+        <div class="field"><label for="email">Email address</label><input class="input" id="email" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com"></div>
+        <div class="field">
+          <label for="password">Password</label>
+          <div class="pw-wrap">
+            <input class="input" id="password" type="password" autocomplete="current-password" placeholder="Your password">
+            <button class="pw-toggle" type="button" id="toggle" aria-label="Show password"><svg class="icon"><use href="#i-eye"/></svg></button>
+          </div>
+        </div>
+        <div class="row-end"><button class="link-btn" type="button" id="forgot">Forgot password?</button></div>
+        <button class="btn btn-primary btn-block" id="submit" type="submit">Log in</button>
+      </form>
+      <p class="auth-switch">Want to teach? <a href="../teacher-apply.html">Apply to join</a></p>
+      <p class="auth-switch">Are you a student? <a href="student-login.html">Student login</a></p>
+    </div>
+    <a class="auth-back" href="../index.html">Back to home</a>
+  </main>
+
+  <script type="module">
+    const $ = (id) => document.getElementById(id);
+    const messageBox = $("message"), submitBtn = $("submit");
+    function showMessage(text, type) { messageBox.textContent = text; messageBox.className = "message show " + type; }
+
+    // Show / hide password (works without Firebase)
+    $("toggle").addEventListener("click", () => {
+      const input = $("password"); const show = input.type === "password";
+      input.type = show ? "text" : "password";
+      $("toggle").querySelector("use").setAttribute("href", show ? "#i-eye-off" : "#i-eye");
+      $("toggle").setAttribute("aria-label", show ? "Hide password" : "Show password");
+    });
+
+    // Loads the Firebase files only when needed, and explains clearly if something is wrong
+    async function loadApi() {
+      try {
+        const a = await import("../assets/js/auth.js");
+        const c = await import("../assets/js/firebase-config.js");
+        return { loginStaff: a.loginStaff, resetPassword: a.resetPassword, friendlyError: a.friendlyError, isConfigured: c.isConfigured };
+      } catch (e) {
+        showMessage("Could not load the Firebase files. Check that auth.js and firebase-config.js are inside assets/js, and that firebase-config.js has no typing mistakes.", "error");
+        return null;
+      }
+    }
+
+    $("login-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      messageBox.className = "message";
+      const email = $("email").value.trim().toLowerCase(), password = $("password").value;
+      if (!email || !password) return showMessage("Please enter your email and password.", "error");
+      const api = await loadApi(); if (!api) return;
+      if (!api.isConfigured) return showMessage("Firebase is not set up yet. Paste your details into assets/js/firebase-config.js.", "error");
+      submitBtn.disabled = true; submitBtn.textContent = "Logging in...";
+      try {
+        const result = await api.loginStaff(email, password);
+        window.location.href = !result.emailVerified ? "verify-email.html" : result.profile.role === "superadmin" ? "../admin/dashboard.html" : "../teacher/dashboard.html";
+      } catch (error) {
+        showMessage(api.friendlyError(error), "error");
+        submitBtn.disabled = false; submitBtn.textContent = "Log in";
+      }
+    });
+
+    $("forgot").addEventListener("click", async () => {
+      messageBox.className = "message";
+      const email = $("email").value.trim().toLowerCase();
+      if (!email) return showMessage("Type your email above first, then tap Forgot password.", "error");
+      const api = await loadApi(); if (!api) return;
+      if (!api.isConfigured) return showMessage("Firebase is not set up yet.", "error");
+      try { await api.resetPassword(email); }
+      catch (error) {
+        if (error.code === "auth/too-many-requests" || error.code === "auth/network-request-failed") return showMessage(api.friendlyError(error), "error");
+      }
+      showMessage("If an account exists for that email, a reset link has been sent. Check your inbox and spam folder.", "success");
+    });
+  </script>
+</body>
+    </html>
+    
