@@ -12,6 +12,16 @@
   <link rel="stylesheet" href="../assets/css/components.css">
   <link rel="stylesheet" href="../assets/css/forms.css">
   <title>Create your account | EduGlobal</title>
+  <style>
+    .confirm-overlay { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 1rem; background: rgba(6, 21, 46, 0.72); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+    .confirm-overlay[hidden] { display: none; }
+    .confirm-box { width: min(100%, 440px); padding: 1.8rem 1.5rem; border-radius: 22px; text-align: center; color: #fff; background: linear-gradient(165deg, #0b2040, #06152e); border: 1.5px solid #4db0ff; box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.7), 0 0 50px -15px rgba(77, 176, 255, 0.6); }
+    .confirm-box .small { font-size: 0.78rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: #ffc83d; margin: 0 0 0.4rem; }
+    .confirm-box h2 { color: #fff; font-size: 1.7rem; margin-bottom: 0.6rem; }
+    .confirm-box p { color: #b4c4de; font-size: 0.93rem; }
+    .confirm-actions { display: grid; gap: 0.6rem; margin-top: 1.2rem; }
+    .class-pick-note { margin: -0.4rem 0 1.1rem; }
+  </style>
 </head>
 <body>
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -22,8 +32,8 @@
   <main class="auth-page">
     <a class="auth-logo" href="../index.html" aria-label="EduGlobal home"><img src="../assets/img/logo.svg" alt="EduGlobal" width="169" height="46"></a>
     <div class="auth-card">
-      <h1>Create your student account</h1>
-      <p class="sub">Fill in every step. The button unlocks when everything is correct.</p>
+      <h1>Join as a student</h1>
+      <p class="sub">Create your account and choose your class. The button unlocks when everything is correct.</p>
       <div id="message" class="message" role="alert"></div>
 
       <form id="register-form" novalidate>
@@ -56,10 +66,14 @@
         </div>
 
         <div class="field"><label for="country">Country</label><select class="input" id="country"><option value="">Select your country</option></select></div>
-        <div class="two-col">
-          <div class="field"><label for="curriculum">Curriculum</label><select class="input" id="curriculum"><option value="">Select curriculum</option></select></div>
-          <div class="field"><label for="level">Educational level</label><select class="input" id="level" disabled><option value="">Choose a curriculum first</option></select></div>
+
+        <div class="field">
+          <label for="classLevel">Your class</label>
+          <select class="input" id="classLevel"><option value="">Select your class</option></select>
+          <p class="hint">Choose carefully. You will join this class, and only the administrator can change it later.</p>
         </div>
+        <label class="check consent class-pick-note" id="confirm1-wrap" hidden><input type="checkbox" id="confirm1"><span id="confirm1-text"></span></label>
+
         <fieldset class="field"><legend>Subjects you want to study</legend><div class="check-grid" id="subjects"></div></fieldset>
         <label class="check consent"><input type="checkbox" id="consent"><span>I am 13 or older, or my parent or guardian knows I am joining. We only collect the information needed to run your account.</span></label>
         <div style="height:1.2rem"></div>
@@ -71,143 +85,123 @@
     <a class="auth-back" href="../index.html">Back to home</a>
   </main>
 
-  <script type="module">
-    // The lists are loaded safely below, so the form still works if a file is missing.
-    let COUNTRIES = [], CURRICULA = {}, SUBJECTS = [];
+  <div class="confirm-overlay" id="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirm-title" hidden>
+    <div class="confirm-box">
+      <p class="small">Final check</p>
+      <h2 id="confirm-title">Are you in JSS 1?</h2>
+      <p id="confirm-text">You will join this class page.</p>
+      <div class="confirm-actions">
+        <button class="btn btn-primary btn-block" id="confirm-yes" type="button">Yes, create my account</button>
+        <button class="btn btn-ghost btn-block" id="confirm-no" type="button">No, change my class</button>
+      </div>
+    </div>
+  </div>
 
+  <script type="module">
     const $ = (id) => document.getElementById(id);
     const form = $("register-form"), messageBox = $("message"), submitBtn = $("submit");
+    let CLASSES = [], SUBJECTS = [];
+    function showMessage(text, type) { messageBox.textContent = text; messageBox.className = "message show " + type; messageBox.scrollIntoView({ behavior: "smooth", block: "center" }); }
 
-    function showMessage(text, type) {
-      messageBox.textContent = text;
-      messageBox.className = "message show " + type;
-      messageBox.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-
-    function fillLists() {
-    COUNTRIES.forEach((c) => $("country").add(new Option(c, c)));
-    Object.entries(CURRICULA).forEach(([id, item]) => $("curriculum").add(new Option(item.name, id)));
-    SUBJECTS.forEach((name) => {
-      const label = document.createElement("label"); label.className = "check";
-      const box = document.createElement("input"); box.type = "checkbox"; box.value = name; box.name = "subject";
-      const text = document.createElement("span"); text.textContent = name;
-      label.append(box, text); $("subjects").append(label);
-    });
-    }
-
-    $("curriculum").addEventListener("change", () => {
-      const level = $("level"); level.innerHTML = "";
-      const curriculum = CURRICULA[$("curriculum").value];
-      if (!curriculum) { level.add(new Option("Choose a curriculum first", "")); level.disabled = true; return; }
-      level.add(new Option("Select your level", ""));
-      const groups = {};
-      curriculum.levels.forEach((item) => {
-        if (!groups[item.group]) { groups[item.group] = document.createElement("optgroup"); groups[item.group].label = item.group; level.append(groups[item.group]); }
-        groups[item.group].append(new Option(item.label, item.id));
-      });
-      level.disabled = false;
-    });
-
-    // Show / hide password
     document.querySelectorAll(".pw-toggle").forEach((btn) => btn.addEventListener("click", () => {
-      const input = $(btn.dataset.target);
-      const show = input.type === "password";
+      const input = $(btn.dataset.target); const show = input.type === "password";
       input.type = show ? "text" : "password";
       btn.querySelector("use").setAttribute("href", show ? "#i-eye-off" : "#i-eye");
       btn.setAttribute("aria-label", show ? "Hide password" : "Show password");
     }));
 
-    // Live checking: marks, strength bar, and the Create account button
-    const RULES = {
-      length: (p) => p.length >= 8,
-      lower: (p) => /[a-z]/.test(p),
-      upper: (p) => /[A-Z]/.test(p),
-      number: (p) => /[0-9]/.test(p),
-      symbol: (p) => /[^A-Za-z0-9]/.test(p)
-    };
+    const RULES = { length: (p) => p.length >= 8, lower: (p) => /[a-z]/.test(p), upper: (p) => /[A-Z]/.test(p), number: (p) => /[0-9]/.test(p), symbol: (p) => /[^A-Za-z0-9]/.test(p) };
     const LABELS = ["Password strength", "Very weak", "Weak", "Fair", "Good", "Strong"];
+    const classLabel = () => { const c = CLASSES.find((x) => x.id === $("classLevel").value); return c ? c.label : ""; };
 
     function getData() {
       return {
-        fullName: $("fullName").value.trim(),
-        email: $("email").value.trim().toLowerCase(),
-        password: $("password").value,
-        country: $("country").value,
-        curriculum: $("curriculum").value,
-        level: $("level").value,
+        fullName: $("fullName").value.trim(), email: $("email").value.trim().toLowerCase(), password: $("password").value,
+        country: $("country").value, curriculum: "nigerian", level: $("classLevel").value,
         subjects: [...document.querySelectorAll("input[name=subject]:checked")].map((b) => b.value)
       };
     }
 
     function check() {
-      const d = getData();
-      let passed = 0;
-      document.querySelectorAll("#rules li").forEach((li) => {
-        const ok = RULES[li.dataset.rule](d.password);
-        li.classList.toggle("ok", ok);
-        if (ok) passed++;
-      });
+      const d = getData(); let passed = 0;
+      document.querySelectorAll("#rules li").forEach((li) => { const ok = RULES[li.dataset.rule](d.password); li.classList.toggle("ok", ok); if (ok) passed++; });
       $("strength").className = "strength" + (d.password ? " s" + passed : "");
       $("strength-label").textContent = d.password ? LABELS[passed] : LABELS[0];
-
-      const confirm = $("confirm").value;
-      const matchEl = $("match");
-      if (!confirm) { matchEl.textContent = ""; matchEl.className = "match"; }
-      else if (confirm === d.password) { matchEl.textContent = "Passwords match"; matchEl.className = "match ok"; }
-      else { matchEl.textContent = "Passwords do not match yet"; matchEl.className = "match bad"; }
-
-      const ready = d.fullName.length >= 2 && /^\S+@\S+\.\S+$/.test(d.email) && passed === 5
-        && confirm === d.password && d.country && d.curriculum && d.level
-        && d.subjects.length > 0 && $("consent").checked;
+      const confirm = $("confirm").value, m = $("match");
+      if (!confirm) { m.textContent = ""; m.className = "match"; }
+      else if (confirm === d.password) { m.textContent = "Passwords match"; m.className = "match ok"; }
+      else { m.textContent = "Passwords do not match yet"; m.className = "match bad"; }
+      const ready = d.fullName.length >= 2 && /^\S+@\S+\.\S+$/.test(d.email) && passed === 5 && confirm === d.password
+        && d.country && d.level && $("confirm1").checked && d.subjects.length > 0 && $("consent").checked;
       submitBtn.disabled = !ready;
       $("progress-note").textContent = ready ? "Everything looks good." : "Complete all fields to continue.";
       return ready;
     }
-    form.addEventListener("input", check);
-    form.addEventListener("change", check);
-    check();
 
-    // Load the country / curriculum / subject lists
+    // First confirmation: appears as soon as a class is chosen
+    $("classLevel").addEventListener("change", () => {
+      $("confirm1").checked = false;
+      const label = classLabel();
+      $("confirm1-wrap").hidden = !label;
+      $("confirm1-text").textContent = label ? "Yes, I am in " + label + ". I chose my class carefully." : "";
+      check();
+    });
+    form.addEventListener("input", check); form.addEventListener("change", check); check();
+
     (async () => {
       try {
         const m = await import("../assets/js/curricula-data.js");
-        COUNTRIES = m.COUNTRIES; CURRICULA = m.CURRICULA; SUBJECTS = m.SUBJECTS;
-        fillLists();
-      } catch (e) {
-        showMessage("Could not load assets/js/curricula-data.js. Check that this file is inside assets/js and is spelled exactly that way.", "error");
-      }
+        CLASSES = m.CLASSES; SUBJECTS = m.SUBJECTS;
+        m.COUNTRIES.forEach((c) => $("country").add(new Option(c, c)));
+        const groups = {};
+        CLASSES.forEach((c) => {
+          if (!groups[c.group]) { groups[c.group] = document.createElement("optgroup"); groups[c.group].label = c.group; $("classLevel").append(groups[c.group]); }
+          groups[c.group].append(new Option(c.label, c.id));
+        });
+        SUBJECTS.forEach((name) => {
+          const label = document.createElement("label"); label.className = "check";
+          const box = document.createElement("input"); box.type = "checkbox"; box.value = name; box.name = "subject";
+          const text = document.createElement("span"); text.textContent = name;
+          label.append(box, text); $("subjects").append(label);
+        });
+      } catch (e) { showMessage("Could not load assets/js/curricula-data.js. Check that this file is inside assets/js.", "error"); }
     })();
 
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      messageBox.className = "message";
+    // Second confirmation: a pop-up asks once more before the account is created
+    form.addEventListener("submit", (event) => {
+      event.preventDefault(); messageBox.className = "message";
       if (!check()) return;
+      const label = classLabel();
+      $("confirm-title").textContent = "Are you in " + label + "?";
+      $("confirm-text").textContent = "You will join the " + label + " class. If this is wrong, only the administrator can change it later.";
+      $("confirm-yes").textContent = "Yes, I am in " + label;
+      $("confirm-modal").hidden = false; $("confirm-yes").focus();
+    });
+    $("confirm-no").addEventListener("click", () => {
+      $("confirm-modal").hidden = true; $("confirm1").checked = false; check();
+      $("classLevel").scrollIntoView({ behavior: "smooth", block: "center" }); $("classLevel").focus();
+    });
 
-      let api;
+    $("confirm-yes").addEventListener("click", async () => {
+      $("confirm-modal").hidden = true;
+      let A, F;
       try {
-        const authModule = await import("../assets/js/auth.js");
-        const configModule = await import("../assets/js/firebase-config.js");
-        api = { registerStudent: authModule.registerStudent, friendlyError: authModule.friendlyError, isConfigured: configModule.isConfigured };
-      } catch (e) {
-        return showMessage("Could not load the Firebase files. Check that auth.js and firebase-config.js are inside assets/js, and that firebase-config.js has no typing mistakes (every value in quotes, with a comma after it).", "error");
-      }
-      if (!api.isConfigured) return showMessage("Firebase is not set up yet. Paste your Firebase details into assets/js/firebase-config.js.", "error");
-
+        A = await import("../assets/js/auth.js");
+        F = await import("../assets/js/firebase-config.js");
+      } catch (e) { return showMessage("Could not load the Firebase files. Check that auth.js and firebase-config.js are inside assets/js.", "error"); }
+      if (!F.isConfigured) return showMessage("Firebase is not set up yet.", "error");
       submitBtn.disabled = true; submitBtn.textContent = "Creating your account...";
       try {
-        await api.registerStudent(getData());
+        await A.registerStudent(getData());
         showMessage("Account created. We are sending a verification email...", "success");
         setTimeout(() => { window.location.href = "verify-email.html"; }, 900);
       } catch (error) {
-        showMessage(api.friendlyError(error), "error");
-        submitBtn.textContent = "Create account";
-        check();
+        showMessage(A.friendlyError(error), "error"); submitBtn.textContent = "Create account"; check();
       }
     });
 
-    // Already logged in on this device? Go straight to the dashboard.
     import("../assets/js/auth.js").then((m) => m.redirectIfSignedIn()).catch(() => {});
   </script>
 </body>
   </html>
-                                                                                                                                                                                    
+                                                                     
