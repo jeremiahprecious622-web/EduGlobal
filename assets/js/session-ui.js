@@ -9,7 +9,9 @@ const ONE_YEAR = 365 * 24 * 60 * 60 * 1000;
 const DASHBOARDS = {
   student: "student/dashboard.html",
   teacher: "teacher/dashboard.html",
-  superadmin: "admin/dashboard.html"
+  superadmin: "admin/dashboard.html",
+  admin: "admin/dashboard.html",
+  applicant: "teacher-apply.html"
 };
 
 export function applySessionUi() {
@@ -34,4 +36,3 @@ export function applySessionUi() {
   }
   document.querySelectorAll("[data-session-cta]").forEach((a) => { a.href = dest; a.textContent = "Go to my dashboard"; });
       }
-      
