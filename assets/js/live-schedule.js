@@ -86,5 +86,18 @@ export function isSessionLive(s) {
   if (!s || s.status !== "live" || !meetLinkOk(s.meetLink)) return false;
   const started = s.startedAt && s.startedAt.toMillis ? s.startedAt.toMillis() : Date.now();
   return Date.now() - started < 3 * 60 * 60 * 1000;
-      }
-  
+}
+
+// "Your local time: 4:00 PM to 7:00 PM (Europe/London)" for students outside Nigeria. Empty for Nigeria.
+export function localRangeText() {
+  try {
+    const n = nowInSchoolTime();
+    const toLocal = (hhmm) => { const [h, m] = hhmm.split(":").map(Number); return new Date(Date.UTC(n.year, n.month - 1, n.date, h - 1, m)); }; // Nigeria is UTC+1
+    const a = toLocal(LIVE.start), b = toLocal(LIVE.end);
+    if (a.getTimezoneOffset() === -60) return "";
+    const fmt = new Intl.DateTimeFormat([], { hour: "numeric", minute: "2-digit" });
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return "Your local time: " + fmt.format(a) + " to " + fmt.format(b) + (tz ? " (" + tz + ")" : "");
+  } catch (e) { return ""; }
+    }
+    
