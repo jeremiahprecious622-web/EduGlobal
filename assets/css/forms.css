@@ -109,5 +109,13 @@ fieldset.field { border: 0; margin-inline: 0; min-width: 0; padding: 0; }
   .side-nav em { margin-left: auto; font-style: normal; font-size: 0.68rem; font-weight: 800; padding: 0.1rem 0.5rem; border-radius: 999px; background: #fff3cf; color: #8a5d00; }
   .side-bottom { margin-top: auto; }
   .app-main { padding: 2.2rem 2.4rem 3rem; }
-   }
-            
+}
+
+/* Confirmation pop-up (used by registration pages) */
+.confirm-overlay { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 1rem; background: rgba(6, 21, 46, 0.72); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.confirm-box { width: min(100%, 440px); padding: 1.8rem 1.5rem; border-radius: 22px; text-align: center; color: #fff; background: linear-gradient(165deg, #0b2040, #06152e); border: 1.5px solid #4db0ff; box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.7), 0 0 50px -15px rgba(77, 176, 255, 0.6); }
+.confirm-box .small { font-size: 0.78rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: #ffc83d; margin: 0 0 0.4rem; }
+.confirm-box h2 { color: #fff; font-size: 1.7rem; margin-bottom: 0.6rem; }
+.confirm-box p { color: #b4c4de; font-size: 0.93rem; }
+.confirm-actions { display: grid; gap: 0.6rem; margin-top: 1.2rem; }
+.auth-card a.inline { color: #4db0ff; font-weight: 700; text-decoration: underline; }
