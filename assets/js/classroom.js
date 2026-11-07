@@ -17,15 +17,15 @@ const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls)
 const when = (ts) => ts ? ts.toDate().toLocaleString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "sending...";
 const ROLE_LABEL = { teacher: "Teacher", superadmin: "Admin" };
 
-export function mountRoom(box, { subject, user, profile, moderator, canPostLessons }) {
+export function mountRoom(box, { subject, level, levelLabel, user, profile, moderator, canPostLessons }) {
   box.innerHTML = "";
   const unsubs = [];
-  const lessonsRef = collection(db, "rooms", subject, "lessons");
-  const messagesRef = collection(db, "rooms", subject, "messages");
+  const lessonsRef = collection(db, "rooms", level, "subjects", subject, "lessons");
+  const messagesRef = collection(db, "rooms", level, "subjects", subject, "messages");
   const note = el("p", "room-note"); note.hidden = true;
   const say = (t) => { note.textContent = t; note.hidden = false; setTimeout(() => { note.hidden = true; }, 5000); };
 
-  box.append(el("h2", "room-title", subject + " classroom"), note);
+  box.append(el("h2", "room-title", (levelLabel ? levelLabel + " " : "") + subject + " classroom"), note);
 
   // ---------- Lessons ----------
   box.append(el("h3", "section-label", "Daily lessons"));
@@ -112,7 +112,7 @@ export function mountRoom(box, { subject, user, profile, moderator, canPostLesso
     if (Date.now() - last < 4000) return say("Please wait a few seconds between messages.");
     last = Date.now(); send.disabled = true;
     try {
-      await addDoc(messagesRef, { text, authorUid: user.uid, authorName: profile.fullName, role: profile.role, createdAt: serverTimestamp() });
+      await addDoc(messagesRef, { text, authorUid: user.uid, authorName: profile.displayName || profile.fullName, role: profile.role, createdAt: serverTimestamp() });
       input.value = "";
     } catch (e) { say("Could not send. Please try again."); }
     send.disabled = false;
@@ -122,4 +122,5 @@ export function mountRoom(box, { subject, user, profile, moderator, canPostLesso
   form.append(input, send); box.append(form);
 
   return () => unsubs.forEach((u) => u());
-            }
+                                }
+                                 
