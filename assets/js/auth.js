@@ -55,6 +55,11 @@ export async function registerStudent(data) {
       curriculum: data.curriculum,
       level: data.level,
       subjects: data.subjects,
+      birthYear: data.birthYear,
+      timeZone: data.timeZone,
+      language: "en",
+      guardianConsent: data.guardianConsent === true,
+      displayName: data.displayName,
       role: "student",       // students can only ever create "student" accounts (enforced by rules)
       status: "active",
       consentAt: serverTimestamp(),
@@ -133,7 +138,7 @@ export async function loginStaff(email, password) {
   if (!snap.exists()) { await signOut(auth); throw new Error("NO_PROFILE"); }
   const profile = snap.data();
   if (profile.status !== "active") { await signOut(auth); throw new Error("SUSPENDED"); }
-  if (!["teacher", "superadmin"].includes(profile.role)) { await signOut(auth); throw new Error("NOT_STAFF"); }
+  if (!["teacher", "superadmin", "admin", "applicant"].includes(profile.role)) { await signOut(auth); throw new Error("NOT_STAFF"); }
   rememberSession(profile.role);
   return { profile, emailVerified: cred.user.emailVerified };
 }
@@ -173,9 +178,41 @@ export function redirectIfSignedIn() {
       const snap = await getDoc(doc(db, "users", user.uid));
       const p = snap.exists() ? snap.data() : null;
       if (!p || p.status !== "active") return;
-      const dest = { student: "../student/dashboard.html", teacher: "../teacher/dashboard.html", superadmin: "../admin/dashboard.html" }[p.role];
+      const dest = { student: "../student/dashboard.html", teacher: "../teacher/dashboard.html", superadmin: "../admin/dashboard.html", admin: "../admin/dashboard.html", applicant: "../teacher-apply.html" }[p.role];
       if (dest) { rememberSession(p.role); window.location.replace(dest); }
     } catch (e) { /* stay on this page */ }
   });
+}
+
+// ----- Teacher applicants -----
+// An applicant account cannot teach. It only lets a person submit a teacher application.
+export async function registerApplicant(data) {
+  const cred = await createUserWithEmailAndPassword(auth, data.email, data.password);
+  try {
+    await updateProfile(cred.user, { displayName: data.fullName });
+    await setDoc(doc(db, "users", cred.user.uid), {
+      fullName: data.fullName,
+      email: cred.user.email,
+      country: data.country,
+      role: "applicant",
+      status: "active",
+      consentAt: serverTimestamp(),
+      createdAt: serverTimestamp()
+    });
+  } catch (error) {
+    await deleteUser(cred.user);
+    throw error;
+  }
+  try { await sendEmailVerification(cred.user, { url: window.location.origin + "/teacher-apply.html" }); } catch (error) {}
+  rememberSession("applicant");
+  return cred.user;
+}
+
+// The role of the person who is logged in now (student, applicant, teacher, superadmin)
+export async function getMyRole() {
+  const u = auth.currentUser;
+  if (!u) return null;
+  const snap = await getDoc(doc(db, "users", u.uid));
+  return snap.exists() ? snap.data().role : null;
       }
-    
+      
