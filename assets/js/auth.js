@@ -12,7 +12,11 @@ import { doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/fi
 
 // A small note saved on this device so the website can remember who is logged in
 function rememberSession(role) {
-  try { localStorage.setItem("eg_role", role); localStorage.setItem("eg_last_active", String(Date.now())); } catch (e) {}
+  try { localStorage.setItem("eg_known", "1"); localStorage.setItem("eg_role", role); localStorage.setItem("eg_last_active", String(Date.now())); } catch (e) {}
+}
+// Has this device ever had an EduGlobal account? (Kept after log out, so returning students see the login page.)
+function hasAccount() {
+  try { return localStorage.getItem("eg_known") === "1"; } catch (e) { return false; }
 }
 function forgetSession() {
   try { localStorage.removeItem("eg_role"); localStorage.removeItem("eg_last_active"); } catch (e) {}
@@ -111,7 +115,7 @@ export async function refreshVerified() {
 // Usage: requireStudent((user, profile) => { ...show the page... });
 export function requireStudent(onReady) {
   onAuthStateChanged(auth, async (user) => {
-    const loginPage = "../auth/student-login.html";
+    const loginPage = hasAccount() ? "../auth/student-login.html" : "../auth/student-register.html";
     if (!user) { window.location.replace(loginPage); return; }
     try {
       if (!user.emailVerified) await reload(user); // pick up a verification done in another tab
@@ -214,5 +218,5 @@ export async function getMyRole() {
   if (!u) return null;
   const snap = await getDoc(doc(db, "users", u.uid));
   return snap.exists() ? snap.data().role : null;
-      }
-      
+    }
+    
