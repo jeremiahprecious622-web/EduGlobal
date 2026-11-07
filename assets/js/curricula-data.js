@@ -42,4 +42,27 @@ export const SUBJECTS = [
   "Chemistry", "Physics", "Computer Studies", "Economics",
   "Business Studies", "Geography", "History", "Other subjects"
 ];
-      
+
+// The six classes students can join at registration
+export const CLASSES = [
+  { id: "jss1", label: "JSS 1", group: "Junior Secondary" },
+  { id: "jss2", label: "JSS 2", group: "Junior Secondary" },
+  { id: "jss3", label: "JSS 3", group: "Junior Secondary" },
+  { id: "ss1", label: "SS1", group: "Senior Secondary" },
+  { id: "ss2", label: "SS2", group: "Senior Secondary" },
+  { id: "ss3", label: "SS3", group: "Senior Secondary" }
+];
+
+// Class lists by education system. To add a country later, add a system here
+// and return it from systemForCountry. No other page needs to change.
+export const CLASS_SYSTEMS = {
+  nigerian: {
+    name: "Nigerian curriculum",
+    note: "EduGlobal classes currently follow the Nigerian curriculum (JSS 1 to SS3). More countries are coming.",
+    classes: CLASSES
+  }
+};
+export function systemForCountry(country) {
+  return "nigerian";
+      }
+       
