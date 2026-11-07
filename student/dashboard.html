@@ -50,13 +50,16 @@
       <div id="content" hidden>
         <!-- HOME -->
         <section class="view" data-view="home">
-          <div class="hello"><h1 id="greeting"></h1><p>Ready to learn today?</p></div>
+          <div class="hello"><h1 id="greeting"></h1><p id="hello-sub">Ready to learn today?</p></div>
+
+          <div class="class-banner" id="class-banner" hidden></div>
 
           <div class="live-hero">
             <span class="badge js-live-badge">Next class</span>
             <h2 id="live-title">EduGlobal Live Class</h2>
             <p class="when js-live-when"></p>
             <p class="days js-days"></p>
+            <p class="days js-local"></p>
           </div>
 
           <h2 class="section-label" style="margin-top:0">Today's classes</h2>
@@ -85,6 +88,7 @@
             <h2>EduGlobal Live Class</h2>
             <p class="when js-live-when"></p>
             <p class="days js-days"></p>
+            <p class="days js-local"></p>
           </div>
           <h2 class="section-label" style="margin-top:0">Today's classes</h2>
           <div class="today-list js-today"></div>
@@ -170,7 +174,7 @@
 
     let toastTimer;
     let myClasses = [], mySubjects = [];
-    let currentUser = null, currentProfile = null, closeRoom = null, RM = null;
+    let currentUser = null, currentProfile = null, closeRoom = null, RM = null, currentLevelLabel = "";
     const sessions = {}, unsubs = {};
     function toast(text) {
       const t = $("toast"); t.textContent = text; t.hidden = false;
@@ -204,6 +208,7 @@
         e.textContent = st.live ? "Class is on until " + L.formatTime(L.LIVE.end) : st.nextLabel + ", " + L.formatTime(L.LIVE.start);
       });
       all(".js-days").forEach((e) => { e.textContent = L.daysText(); });
+      all(".js-local").forEach((e) => { e.textContent = L.localRangeText(); });
 
       const list = $("class-list"); if (myClasses.length) return; list.innerHTML = "";
       L.upcomingClasses(4).forEach((c) => {
@@ -215,6 +220,46 @@
         const time = document.createElement("span"); time.textContent = L.formatTime(L.LIVE.start) + " to " + L.formatTime(L.LIVE.end);
         item.append(left, time); list.append(item);
       });
+    }
+
+    // ----- Ask the administrator to change my class -----
+    async function buildClassChange(user, profile) {
+      const panel = document.createElement("div"); panel.className = "panel"; panel.style.marginTop = "1rem";
+      const view = document.querySelector('[data-view="profile"]'); view.append(panel);
+      const h = document.createElement("h2"); h.style.cssText = "font-size:1.1rem;margin:0 0 0.4rem"; h.textContent = "My class";
+      const p = document.createElement("p"); p.textContent = "You are in " + currentLevelLabel + ". Chose the wrong class by mistake? Ask the administrator to change it.";
+      panel.append(h, p);
+
+      let existing = null;
+      try { const snap = await FS.getDoc(FS.doc(F.db, "classChangeRequests", user.uid)); existing = snap.exists() ? snap.data() : null; } catch (e) {}
+      const label = (id) => { const c = D.CLASSES.find((x) => x.id === id); return c ? c.label : id; };
+      if (existing && existing.status === "pending") {
+        const note = document.createElement("p"); note.className = "today-note";
+        note.textContent = "Request sent: move to " + label(existing.toLevel) + ". Waiting for the administrator.";
+        panel.append(note);
+      } else if (existing && existing.status === "rejected") {
+        const note = document.createElement("p"); note.className = "today-note";
+        note.textContent = "Your last request to move to " + label(existing.toLevel) + " was not approved.";
+        panel.append(note);
+      }
+      const open = document.createElement("button"); open.type = "button"; open.className = "btn btn-ghost btn-sm"; open.textContent = "Request a class change";
+      const form = document.createElement("div"); form.style.cssText = "display:none;gap:0.7rem;margin-top:0.9rem";
+      const sel = document.createElement("select"); sel.className = "dash-input";
+      sel.add(new Option("Which class should you be in?", ""));
+      D.CLASSES.filter((c) => c.id !== profile.level).forEach((c) => sel.add(new Option(c.label, c.id)));
+      const reason = document.createElement("textarea"); reason.className = "dash-input"; reason.rows = 3; reason.maxLength = 300; reason.placeholder = "Why do you need the change? (at least 5 characters)";
+      const send = document.createElement("button"); send.type = "button"; send.className = "btn btn-primary btn-sm"; send.textContent = "Send request";
+      send.addEventListener("click", async () => {
+        if (!sel.value) return toast("Please choose the class you should be in.");
+        if (reason.value.trim().length < 5) return toast("Please write a short reason.");
+        send.disabled = true;
+        try {
+          await FS.setDoc(FS.doc(F.db, "classChangeRequests", user.uid), { fromLevel: profile.level, toLevel: sel.value, reason: reason.value.trim(), status: "pending", createdAt: FS.serverTimestamp() });
+          toast("Request sent. The administrator will review it."); form.style.display = "none"; open.hidden = true;
+        } catch (e) { toast("Could not send the request. Please try again."); send.disabled = false; }
+      });
+      open.addEventListener("click", () => { form.style.display = form.style.display === "none" ? "grid" : "none"; });
+      form.append(sel, reason, send); panel.append(open, form);
     }
 
     // ----- Classroom: lessons and chat for each subject -----
@@ -231,7 +276,7 @@
       try {
         RM = RM || await import("../assets/js/classroom.js");
         if (closeRoom) closeRoom();
-        closeRoom = RM.mountRoom($("room-box"), { subject, user: currentUser, profile: currentProfile, moderator: false, canPostLessons: false });
+        closeRoom = RM.mountRoom($("room-box"), { subject, level: currentProfile.level, levelLabel: currentLevelLabel, user: currentUser, profile: currentProfile, moderator: false, canPostLessons: false });
         $("room-pick").hidden = true; $("room-wrap").hidden = false; show("courses");
       } catch (e) { toast("Could not open the classroom. Please try again."); }
     }
@@ -245,8 +290,8 @@
 
     async function loadClasses() {
       try {
-        const snap = await FS.getDocs(FS.query(FS.collection(F.db, "classes"), FS.where("subject", "in", mySubjects)));
-        myClasses = snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((c) => c.active !== false);
+        const snap = await FS.getDocs(FS.query(FS.collection(F.db, "classes"), FS.where("level", "==", currentProfile.level)));
+        myClasses = snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((c) => c.active !== false && mySubjects.includes(c.subject));
       } catch (e) { myClasses = []; }
       renderTimetable(); syncListeners(); renderToday();
     }
@@ -350,4 +395,45 @@
     // ----- Fill the page once we know the student is logged in and verified -----
     A.requireStudent((user, profile) => {
       const first = profile.fullName.split(" ")[0];
-      const
+      const hour = new Date().getHours();
+      $("greeting").textContent = (hour < 12 ? "Good morning, " : hour < 17 ? "Good afternoon, " : "Good evening, ") + first;
+      const lvInfo = ((D.CURRICULA[profile.curriculum] || { levels: [] }).levels).find((l) => l.id === profile.level);
+      currentLevelLabel = lvInfo ? lvInfo.label : profile.level;
+      const banner = $("class-banner"); banner.innerHTML = "";
+      const b1 = document.createElement("span"); b1.className = "cb-small"; b1.textContent = "Your class";
+      const b2 = document.createElement("strong"); b2.textContent = currentLevelLabel;
+      const b3 = document.createElement("span"); b3.className = "cb-sub"; b3.textContent = "Everything below, your timetable, lessons and class chat, is for " + currentLevelLabel + ".";
+      banner.append(b1, b2, b3); banner.hidden = false;
+      $("hello-sub").textContent = "You are in " + currentLevelLabel + ". Ready to learn today?";
+      const initial = profile.fullName.trim().charAt(0).toUpperCase();
+      all(".js-avatar, .js-avatar-big").forEach((e) => { e.textContent = initial; });
+
+      const curriculum = D.CURRICULA[profile.curriculum];
+      const level = curriculum ? curriculum.levels.find((l) => l.id === profile.level) : null;
+      $("p-name").textContent = profile.fullName;
+      $("p-email").textContent = profile.email;
+      $("p-country").textContent = profile.country;
+      $("p-curriculum").textContent = curriculum ? curriculum.name : profile.curriculum;
+      $("p-level").textContent = level ? level.label : profile.level;
+      $("p-subjects").textContent = profile.subjects.join(", ");
+      profile.subjects.forEach((s) => { const c = document.createElement("span"); c.className = "chip"; c.textContent = s; $("subject-chips").append(c); });
+
+      $("reset-pw").addEventListener("click", async () => {
+        try { await A.resetPassword(user.email); toast("Password reset email sent. Check your inbox."); }
+        catch (e) { toast(A.friendlyError(e)); }
+      });
+
+      currentUser = user; currentProfile = profile; buildRoomCards();
+      buildClassChange(user, profile);
+      renderLive(); mySubjects = profile.subjects; loadClasses(); setInterval(() => { renderLive(); syncListeners(); renderToday(); }, 30000); loadWhatsApp();
+      $("loading").hidden = true; $("content").hidden = false;
+      show(location.hash.slice(1) || "home");
+    });
+
+    all(".js-logout").forEach((b) => b.addEventListener("click", async () => {
+      await A.logout();
+      window.location.href = "../index.html";
+    }));
+  </script>
+</body>
+</html>
