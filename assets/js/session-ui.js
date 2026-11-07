@@ -14,6 +14,18 @@ const DASHBOARDS = {
   applicant: "teacher-apply.html"
 };
 
+// Where does this device's logged-in person belong? Returns null for a brand-new visitor.
+export function sessionDestination() {
+  let role = null, last = 0;
+  try {
+    role = localStorage.getItem("eg_role");
+    last = Number(localStorage.getItem("eg_last_active") || 0);
+  } catch (e) { return null; }
+  if (!role || !DASHBOARDS[role]) return null;
+  if (!last || Date.now() - last > ONE_YEAR) return null;
+  return DASHBOARDS[role];
+}
+
 export function applySessionUi() {
   let role = null, last = 0;
   try {
@@ -35,4 +47,5 @@ export function applySessionUi() {
     actions.append(link);
   }
   document.querySelectorAll("[data-session-cta]").forEach((a) => { a.href = dest; a.textContent = "Go to my dashboard"; });
-      }
+              }
+      
