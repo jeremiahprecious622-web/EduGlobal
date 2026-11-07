@@ -5,7 +5,7 @@
 // The timetable lives in live-schedule.js
 // ==========================================================
 
-import { LIVE, liveStatus, formatTime, daysText } from "./live-schedule.js";
+import { LIVE, liveStatus, formatTime, daysText, localRangeText } from "./live-schedule.js";
 import { applySessionUi } from "./session-ui.js";
 
 const DASHBOARD = "student/dashboard.html#live"; // logged-out visitors are sent to the login page automatically
@@ -51,6 +51,7 @@ function updateLive() {
 
 const title = $("#live-title"); if (title) title.textContent = LIVE.title;
 const days = $("#live-days"); if (days) days.textContent = daysText();
+const localLine = $("#live-local"); if (localLine) localLine.textContent = localRangeText();
 updateLive();
 setInterval(updateLive, 30000);
-      
+  
