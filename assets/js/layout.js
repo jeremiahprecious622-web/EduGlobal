@@ -40,7 +40,7 @@ const FOOTER = `<footer class="site-footer"><div class="container"><div class="f
 <div class="footer-brand"><img src="assets/img/logo.svg" alt="EduGlobal" width="153" height="42"><p>Your Future Has No Borders.</p></div>
 <div><h4>Learn</h4><ul><li><a href="courses.html">Courses</a></li><li><a href="auth/student-register.html">Create account</a></li><li><a href="auth/student-login.html">Student login</a></li></ul></div>
 <div><h4>Teach</h4><ul><li><a href="teacher-apply.html">Apply to teach</a></li><li><a href="auth/teacher-login.html">Teacher login</a></li><li><a href="teachers.html">Our teachers</a></li></ul></div>
-<div><h4>Company</h4><ul><li><a href="about.html">About</a></li><li><a href="contact.html">Contact</a></li></ul></div>
+<div><h4>Company</h4><ul><li><a href="about.html">About</a></li><li><a href="contact.html">Contact</a></li><li><a href="privacy.html">Privacy Policy</a></li><li><a href="terms.html">Terms of Use</a></li></ul></div>
 </div><div class="footer-bottom"><p>&copy; ${new Date().getFullYear()} EduGlobal. All rights reserved.</p><p>Learn. Grow. Achieve.</p></div></div></footer>`;
 
 document.body.insertAdjacentHTML("afterbegin", SPRITE);
