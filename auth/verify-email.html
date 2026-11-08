@@ -66,7 +66,7 @@
         try {
           if (await api.refreshVerified()) {
             showMessage("Email verified. Taking you to your dashboard...", "success");
-            setTimeout(() => { window.location.href = "../student/dashboard.html"; }, 700);
+            setTimeout(async () => { let role = null; try { role = await api.getMyRole(); } catch (e) {} window.location.href = role === "applicant" ? "../teacher-apply.html" : role === "teacher" ? "../teacher/dashboard.html" : role === "superadmin" ? "../admin/dashboard.html" : "../student/dashboard.html"; }, 700);
             return true;
           }
           if (showFeedback) showMessage("Not verified yet. Open the link in the email first, then tap this button again.", "error");
@@ -91,5 +91,4 @@
     }
   </script>
 </body>
-  </html>
-                                                                                        
+</html>
