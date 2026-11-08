@@ -23,7 +23,7 @@
     <a class="auth-logo" href="../index.html" aria-label="EduGlobal home"><img src="../assets/img/logo.svg" alt="EduGlobal" width="169" height="46"></a>
     <div class="auth-card narrow">
       <h1>Staff login</h1>
-      <p class="sub">For EduGlobal teachers and administrators.</p>
+      <p class="sub">For EduGlobal teachers, teacher applicants and the administrator.</p>
       <div id="message" class="message" role="alert"></div>
       <form id="login-form" novalidate>
         <div class="field"><label for="email">Email address</label><input class="input" id="email" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com"></div>
@@ -78,7 +78,7 @@
       submitBtn.disabled = true; submitBtn.textContent = "Logging in...";
       try {
         const result = await api.loginStaff(email, password);
-        window.location.href = !result.emailVerified ? "verify-email.html" : result.profile.role === "superadmin" ? "../admin/dashboard.html" : "../teacher/dashboard.html";
+        window.location.href = !result.emailVerified ? "verify-email.html" : result.profile.role === "superadmin" ? "../admin/dashboard.html" : result.profile.role === "applicant" ? "../teacher-apply.html" : "../teacher/dashboard.html";
       } catch (error) {
         showMessage(api.friendlyError(error), "error");
         submitBtn.disabled = false; submitBtn.textContent = "Log in";
@@ -102,5 +102,4 @@
     import("../assets/js/auth.js").then((m) => m.redirectIfSignedIn()).catch(() => {});
   </script>
 </body>
-  </html>
-  
+</html>
