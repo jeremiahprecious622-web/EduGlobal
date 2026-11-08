@@ -297,4 +297,28 @@
 
       const card = $("test-card"); card.innerHTML = "";
       let attempt = null;
-      try { const t = await FS.getDoc(FS.doc(F.db, "teacherTests", user.uid)); attempt = t.exists() ? t.
+      try { const t = await FS.getDoc(FS.doc(F.db, "teacherTests", user.uid)); attempt = t.exists() ? t.exists() ? t.data() : null; } catch (e) {}
+      const line = (text) => card.append(el("p", "", text));
+      const go = (text) => { const a = el("a", "btn btn-primary", text); a.href = "teacher-test.html"; card.append(a); };
+
+      if (app.status === "approved") { line("You are admitted. Open your teacher dashboard."); const a = el("a", "btn btn-gold", "Teacher dashboard"); a.href = "teacher/dashboard.html"; card.append(a); return; }
+      if (!attempt) {
+        const plan = T.planTest(app.subjects);
+        line("You will answer " + T.TOTAL_QUESTIONS + " questions on: " + app.subjects.join(", ") + ". Time allowed: " + T.minutesText(plan.totalSeconds) + ".");
+        line("You can take the test once. If you leave the test page, you get one warning. Leaving a second time ends the test and it cannot be retaken.");
+        go("Start the test");
+      } else if (attempt.status === "in_progress") {
+        const left = attempt.startedAt.toMillis() + attempt.durationSec * 1000 - Date.now();
+        if (left > 0) { line("Your test is in progress. Time left: about " + T.minutesText(left / 1000) + "."); go("Continue the test"); }
+        else line("Your test time has ended. The administrator will review your answers.");
+      } else if (attempt.status === "submitted") {
+        line("Test submitted. The administrator will review your whole application.");
+        try { const r = await T.scoreAttempt({ db: F.db, FS, attempt }); line("Your score: " + r.score + " out of " + r.total + " (" + Math.round((r.score / r.total) * 100) + "%)."); } catch (e) {}
+      } else {
+        line("Your test ended because you left the test page twice. It cannot be retaken. The administrator will still see your application.");
+      }
+    }
+  </script>
+</body>
+</html>
+
