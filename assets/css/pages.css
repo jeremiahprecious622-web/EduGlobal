@@ -20,4 +20,38 @@
 .contact-card span { color: var(--muted); font-size: 0.92rem; overflow-wrap: anywhere; }
 .two-up { display: grid; gap: 1.1rem; }
 @media (min-width: 860px) { .two-up { grid-template-columns: 1fr 1fr; } }
-                
+
+/* ----- Teacher application form (light pages) ----- */
+.apply-card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius-lg); padding: clamp(1.2rem, 4vw, 2rem); box-shadow: var(--shadow); margin-bottom: 1.2rem; }
+.apply-card h2 { font-size: 1.2rem; margin-bottom: 0.3rem; }
+.apply-card .sub { font-size: 0.92rem; margin-bottom: 1.1rem; }
+.f-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); margin-bottom: 1rem; }
+.f-field { margin-bottom: 1rem; }
+.f-grid .f-field { margin-bottom: 0; }
+.f-field label { display: block; font-weight: 700; font-size: 0.86rem; margin-bottom: 0.35rem; }
+.f-input { width: 100%; min-height: 48px; padding: 0.65rem 0.9rem; font: inherit; font-size: 1rem; color: var(--ink); background: #fff; border: 1.5px solid #d5e0f0; border-radius: 12px; }
+.f-input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 4px rgba(20, 115, 230, 0.15); }
+textarea.f-input { min-height: 150px; resize: vertical; }
+.f-hint { font-size: 0.82rem; color: var(--muted); margin: 0.3rem 0 0; }
+.f-count { font-size: 0.78rem; color: var(--muted); margin: 0.25rem 0 0; text-align: right; }
+.f-count.bad { color: var(--red); }
+.f-count.good { color: var(--green); }
+.f-checks { display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 0.5rem; }
+.f-check { display: flex; align-items: center; gap: 0.55rem; padding: 0.6rem 0.8rem; font-size: 0.88rem; font-weight: 600; border: 1.5px solid #d5e0f0; border-radius: 12px; cursor: pointer; background: #fff; }
+.f-check input { width: 18px; height: 18px; accent-color: var(--blue); flex: none; }
+.f-check:has(input:checked) { background: var(--sky); border-color: var(--blue); }
+.f-msg { display: none; padding: 0.8rem 1rem; border-radius: 12px; font-weight: 600; font-size: 0.92rem; margin: 0 0 1rem; }
+.f-msg.show { display: block; }
+.f-msg.error { background: #fdecec; border: 1px solid #f3b4b4; color: #a52525; }
+.f-msg.success { background: #e3f8ee; border: 1px solid #a8e3c6; color: #0b6e48; }
+.banner-closed { padding: 1.4rem; border-radius: var(--radius-lg); background: #fdecec; border: 1px solid #f3b4b4; color: #8a1f1f; text-align: center; }
+.banner-closed h2 { color: #8a1f1f; margin-bottom: 0.3rem; font-size: 1.3rem; }
+.banner-closed p { color: #8a1f1f; margin: 0; }
+.pill-status { display: inline-block; padding: 0.3rem 0.9rem; border-radius: 999px; font-weight: 800; font-size: 0.82rem; background: var(--sky); color: var(--blue-d); }
+.pill-status.green { background: #e3f8ee; color: #0b7a50; }
+.pill-status.red { background: #fdecec; color: #a52525; }
+.pill-status.gold { background: #fff3cf; color: #8a5d00; }
+.sum-list { display: grid; gap: 0.6rem; margin: 1rem 0 0; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.sum-list div { padding: 0.7rem 0.9rem; border: 1px solid var(--line); border-radius: 12px; background: var(--soft); }
+.sum-list dt { font-size: 0.76rem; color: var(--muted); font-weight: 600; }
+.sum-list dd { margin: 0; font-weight: 700; overflow-wrap: anywhere; }
