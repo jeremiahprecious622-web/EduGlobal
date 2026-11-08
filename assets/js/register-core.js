@@ -62,7 +62,7 @@ export function openConfirm({ small = "Final check", title, text, yesText, noTex
     const done = (value) => { overlay.remove(); resolve(value); };
     yes.addEventListener("click", () => done(true));
     no.addEventListener("click", () => done(false));
-    actions.append(yes, no); box.append(s, h, p, actions); overlay.append(box);
+    actions.append(yes); if (noText) actions.append(no); box.append(s, h, p, actions); overlay.append(box);
     document.body.append(overlay); yes.focus();
   });
 }
@@ -80,4 +80,4 @@ export function userTimeZone() {
 
 // Approximate age from the birth year only (we do not collect the full date of birth)
 export function ageFrom(birthYear) { return new Date().getFullYear() - birthYear; }
-                            
+      
