@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="icon" type="image/svg+xml" href="../assets/img/logo-icon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/forms.css">
+  <title>Join as a teacher | EduGlobal</title>
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M3 3l18 18M10.6 5.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4M6.5 6.6C3.8 8.4 2 12 2 12s3.6 7 10 7c1.7 0 3.2-.4 4.5-1M9.9 9.9a3 3 0 0 0 4.2 4.2"/></symbol>
+  </svg>
+  <main class="auth-page">
+    <a class="auth-logo" href="../index.html" aria-label="EduGlobal home"><img src="../assets/img/logo.svg" alt="EduGlobal" width="169" height="46"></a>
+    <div class="auth-card">
+      <h1>Join as a teacher</h1>
+      <p class="sub">Step 1 of 3: create your account. Next you will submit your CV and qualifications, then take a short subject test. The administrator reviews every application.</p>
+      <div id="message" class="message" role="alert"></div>
+
+      <form id="register-form" novalidate>
+        <div class="field"><label for="fullName">Full name (as on your certificates)</label><input class="input" id="fullName" type="text" autocomplete="name" maxlength="80" placeholder="e.g. Ada Okafor"></div>
+        <div class="field"><label for="email">Email address</label><input class="input" id="email" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com"></div>
+        <div class="field">
+          <label for="password">Create password</label>
+          <div class="pw-wrap">
+            <input class="input" id="password" type="password" autocomplete="new-password" placeholder="Create a strong password">
+            <button class="pw-toggle" type="button" data-target="password" aria-label="Show password"><svg class="icon"><use href="#i-eye"/></svg></button>
+          </div>
+          <div class="strength" id="strength"><span></span><span></span><span></span><span></span><span></span></div>
+          <p class="strength-label" id="strength-label">Password strength</p>
+          <ul class="rules" id="rules">
+            <li data-rule="length"><span class="mark"><svg class="icon"><use href="#i-check"/></svg></span>At least 8 characters</li>
+            <li data-rule="lower"><span class="mark"><svg class="icon"><use href="#i-check"/></svg></span>A small letter (a to z)</li>
+            <li data-rule="upper"><span class="mark"><svg class="icon"><use href="#i-check"/></svg></span>A capital letter (A to Z)</li>
+            <li data-rule="number"><span class="mark"><svg class="icon"><use href="#i-check"/></svg></span>A number (0 to 9)</li>
+            <li data-rule="symbol"><span class="mark"><svg class="icon"><use href="#i-check"/></svg></span>A special character (@ # ! $ %)</li>
+          </ul>
+        </div>
+        <div class="field">
+          <label for="confirm">Confirm password</label>
+          <div class="pw-wrap">
+            <input class="input" id="confirm" type="password" autocomplete="new-password" placeholder="Type the password again">
+            <button class="pw-toggle" type="button" data-target="confirm" aria-label="Show password"><svg class="icon"><use href="#i-eye"/></svg></button>
+          </div>
+          <p class="match" id="match"></p>
+        </div>
+        <div class="field"><label for="country">Country</label><select class="input" id="country"><option value="">Select your country</option></select></div>
+        <label class="check consent"><input type="checkbox" id="age"><span>I am 18 or older.</span></label>
+        <label class="check consent" style="margin-top:0.6rem"><input type="checkbox" id="consent"><span>I agree to the <a class="inline" href="../terms.html" target="_blank" rel="noopener">Terms of Use</a> and <a class="inline" href="../privacy.html" target="_blank" rel="noopener">Privacy Policy</a>, and I understand the administrator will check my details and documents.</span></label>
+        <div style="height:1.2rem"></div>
+        <button class="btn btn-primary btn-block" id="submit" type="submit" disabled>Create applicant account</button>
+        <p class="progress-note" id="progress-note">Complete all fields to continue.</p>
+      </form>
+      <p class="auth-switch">Already applied? <a href="teacher-login.html">Teacher login</a></p>
+      <p class="auth-switch">Want to learn instead? <a href="student-register.html">Join as a student</a> (use a different email).</p>
+    </div>
+    <a class="auth-back" href="../index.html">Back to home</a>
+  </main>
+
+  <script type="module">
+    const $ = (id) => document.getElementById(id);
+    const form = $("register-form"), messageBox = $("message"), submitBtn = $("submit");
+    function showMessage(text, type) { messageBox.textContent = text; messageBox.className = "message show " + type; messageBox.scrollIntoView({ behavior: "smooth", block: "center" }); }
+
+    let Core, Data;
+    try {
+      Core = await import("../assets/js/register-core.js");
+      Data = await import("../assets/js/curricula-data.js");
+    } catch (e) { showMessage("Could not load a page file. Check register-core.js and curricula-data.js are inside assets/js.", "error"); throw e; }
+    Core.wirePasswordToggles();
+    Data.COUNTRIES.forEach((c) => $("country").add(new Option(c, c)));
+
+    const getData = () => ({ fullName: $("fullName").value.trim(), email: $("email").value.trim().toLowerCase(), password: $("password").value, country: $("country").value });
+    function check() {
+      const d = getData();
+      const pw = Core.checkPassword({ password: d.password, confirm: $("confirm").value, strengthEl: $("strength"), labelEl: $("strength-label"), rulesEl: $("rules"), matchEl: $("match") });
+      const ready = d.fullName.length >= 2 && Core.EMAIL_RE.test(d.email) && pw.allRules && pw.matches && d.country && $("age").checked && $("consent").checked;
+      submitBtn.disabled = !ready;
+      $("progress-note").textContent = ready ? "Everything looks good." : "Complete all fields to continue.";
+      return ready;
+    }
+    form.addEventListener("input", check); form.addEventListener("change", check); check();
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault(); messageBox.className = "message";
+      if (!check()) return;
+      let A, F, FS;
+      try {
+        A = await import("../assets/js/auth.js");
+        F = await import("../assets/js/firebase-config.js");
+        FS = await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js");
+      } catch (e) { return showMessage("Could not load the Firebase files. Check auth.js and firebase-config.js.", "error"); }
+      submitBtn.disabled = true; submitBtn.textContent = "Checking...";
+      try {
+        const r = await FS.getDoc(FS.doc(F.db, "settings", "recruitment"));
+        if (!r.exists() || r.data().status !== "open" || r.data().approvedCount >= r.data().maxTeachers) {
+          showMessage("TEACHER RECRUITMENT CLOSED. We are not accepting new teacher applications right now.", "error");
+          submitBtn.textContent = "Create applicant account"; return;
+        }
+      } catch (e) { showMessage("Could not check recruitment. Please try again.", "error"); submitBtn.textContent = "Create applicant account"; check(); return; }
+      submitBtn.textContent = "Creating your account...";
+      try {
+        await A.registerApplicant(getData());
+        showMessage("Account created. We are sending a verification email...", "success");
+        setTimeout(() => { window.location.href = "verify-email.html"; }, 900);
+      } catch (error) { showMessage(A.friendlyError(error), "error"); submitBtn.textContent = "Create applicant account"; check(); }
+    });
+
+    import("../assets/js/auth.js").then((m) => m.redirectIfSignedIn()).catch(() => {});
+  </script>
+</body>
+  </html>
+  
